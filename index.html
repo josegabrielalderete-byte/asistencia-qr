@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema de Asistencia QR</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -278,6 +279,59 @@
   .result-dup { background: rgba(251,191,36,.15);  color: #fbbf24;       border: 1px solid rgba(251,191,36,.3); }
   .result-err { background: rgba(248,113,113,.15); color: var(--danger);  border: 1px solid rgba(248,113,113,.3); }
 
+  /* ── CAMERA SCANNER ── */
+  .cam-wrap {
+    position: relative; width: 100%; max-width: 320px;
+    margin: 0 auto 16px; border-radius: 16px; overflow: hidden;
+    background: #000; aspect-ratio: 1;
+  }
+  #cam-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cam-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .cam-frame {
+    width: 65%; height: 65%;
+    border: 3px solid var(--accent);
+    border-radius: 12px;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,.5);
+    animation: pulse-frame 2s ease-in-out infinite;
+  }
+  @keyframes pulse-frame {
+    0%,100% { border-color: var(--accent); }
+    50%      { border-color: var(--accent2); }
+  }
+  .cam-line {
+    position: absolute; left: 17.5%; right: 17.5%;
+    height: 2px; background: var(--accent);
+    animation: scan-line 2s linear infinite;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  @keyframes scan-line { 0% { top: 17.5%; } 100% { top: 82.5%; } }
+  .cam-status { font-size: .8rem; color: var(--muted); margin-bottom: 10px; min-height: 18px; text-align:center; }
+  .btn-cam {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #0a0a0f; font-weight: 700; border: none;
+    padding: 14px; border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 1rem;
+    cursor: pointer; width: 100%; margin-bottom: 10px;
+    transition: opacity .2s, transform .15s;
+  }
+  .btn-cam:hover { opacity: .88; transform: translateY(-1px); }
+  .btn-cam:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .btn-stop {
+    background: transparent; color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 9px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: .88rem;
+    cursor: pointer; width: 100%; margin-bottom: 10px;
+    transition: all .2s;
+  }
+  .btn-stop:hover { background: var(--danger); color: #fff; }
+  .divider { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:.78rem; margin:10px 0; }
+  .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
   /* ── CONFIG VIEW ── */
   .config-row { display: flex; gap: 16px; flex-wrap: wrap; }
   .config-item { flex: 1; min-width: 220px; }
@@ -432,26 +486,38 @@
 <!-- ════════════════════════ VIEW: ESCANEAR ════════════════════════ -->
 <div id="view-escanear" class="view">
   <div class="section-title">Registro de Asistencia</div>
-  <div class="section-sub">El alumno escanea su QR y la cámara del celular abre esta página automáticamente.</div>
+  <div class="section-sub">Usá la cámara integrada para escanear tu QR, o ingresá tu DNI manualmente.</div>
 
   <div class="scan-wrap">
     <div class="scan-card">
-      <div class="icon">📷</div>
-      <h2>Registrar Asistencia</h2>
-      <p class="desc">Escaneá tu QR con la cámara, ingresá tu DNI, o dejá que se complete solo si abriste esta página desde el QR.</p>
-      <input id="scan-input" type="text" placeholder="TU CÓDIGO" autocomplete="off"
+      <h2>📷 Escaneá tu QR</h2>
+      <p class="desc">Presioná el botón para abrir la cámara y apuntá al QR de tu tarjeta.</p>
+
+      <!-- Camera viewer -->
+      <div class="cam-wrap" id="cam-wrap" style="display:none">
+        <video id="cam-video" autoplay playsinline muted></video>
+        <canvas id="cam-canvas" style="display:none"></canvas>
+        <div class="cam-overlay">
+          <div class="cam-frame"></div>
+          <div class="cam-line"></div>
+        </div>
+      </div>
+
+      <div class="cam-status" id="cam-status"></div>
+
+      <button class="btn-cam" id="btn-open-cam" onclick="startCamera()">
+        📷 Abrir Cámara y Escanear QR
+      </button>
+      <button class="btn-stop" id="btn-stop-cam" style="display:none" onclick="stopCamera()">
+        ✕ Cerrar cámara
+      </button>
+
+      <div class="divider">o ingresá el DNI manualmente</div>
+
+      <input id="scan-input" type="text" placeholder="TU DNI" autocomplete="off"
         oninput="onScanInput(this.value)" onkeydown="if(event.key==='Enter') registerAttendance()">
       <button class="btn btn-primary" style="width:100%" onclick="registerAttendance()">✓ Registrar Asistencia</button>
       <div id="scan-result" class="result-box"></div>
-    </div>
-
-    <div class="card" style="width:100%; margin-bottom:0">
-      <p style="font-size:.82rem; color:var(--muted); line-height:1.7">
-        <strong style="color:var(--accent)">¿Cómo registrar tu asistencia?</strong><br>
-        <strong>Opción 1 — QR:</strong> Abrí cualquier app lectora de QR, escaneá tu código y se registra solo.<br>
-        <strong>Opción 2 — Manual:</strong> Escribí tu número de DNI arriba y presioná <em>Registrar</em>.<br>
-        <strong>Opción 3 — Link directo:</strong> Abrí el link que está impreso debajo de tu QR.
-      </p>
     </div>
   </div>
 </div>
@@ -813,6 +879,82 @@ function loadConfig() {
   document.getElementById('cfg-course').value  = c.course   || '';
   document.getElementById('cfg-base-url').value= c.baseUrl  || '';
   document.getElementById('cfg-webhook').value = c.webhook  || '';
+}
+
+// ── CAMERA SCANNER ────────────────────────────────────────
+let camStream = null;
+let camAnimFrame = null;
+let camActive = false;
+
+async function startCamera() {
+  const btn = document.getElementById('btn-open-cam');
+  const stopBtn = document.getElementById('btn-stop-cam');
+  const wrap = document.getElementById('cam-wrap');
+  const status = document.getElementById('cam-status');
+  const video = document.getElementById('cam-video');
+
+  status.textContent = '⏳ Iniciando cámara...';
+  btn.disabled = true;
+
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 1280 } }
+    });
+    video.srcObject = camStream;
+    await video.play();
+    wrap.style.display = 'block';
+    stopBtn.style.display = 'block';
+    btn.style.display = 'none';
+    status.textContent = '📷 Apuntá al QR de tu tarjeta...';
+    camActive = true;
+    scanFrame();
+  } catch(e) {
+    status.textContent = '❌ No se pudo acceder a la cámara. Verificá los permisos.';
+    btn.disabled = false;
+    console.error(e);
+  }
+}
+
+function stopCamera() {
+  camActive = false;
+  if (camAnimFrame) cancelAnimationFrame(camAnimFrame);
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  document.getElementById('cam-wrap').style.display = 'none';
+  document.getElementById('btn-stop-cam').style.display = 'none';
+  document.getElementById('btn-open-cam').style.display = 'block';
+  document.getElementById('btn-open-cam').disabled = false;
+  document.getElementById('cam-status').textContent = '';
+}
+
+function scanFrame() {
+  if (!camActive) return;
+  const video = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+    camAnimFrame = requestAnimationFrame(scanFrame);
+    return;
+  }
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  // Use jsQR to decode
+  if (typeof jsQR !== 'undefined') {
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: 'dontInvert'
+    });
+    if (code && code.data) {
+      const dni = code.data.trim();
+      document.getElementById('cam-status').textContent = '✅ QR detectado: ' + dni;
+      document.getElementById('scan-input').value = dni;
+      stopCamera();
+      setTimeout(() => registerAttendance(), 400);
+      return;
+    }
+  }
+  camAnimFrame = requestAnimationFrame(scanFrame);
 }
 
 // ── INIT ───────────────────────────────────────────────────
