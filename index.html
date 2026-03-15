@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Asistencia QR</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: #2a2a38;
+    --accent: #6ee7b7;
+    --accent2: #818cf8;
+    --danger: #f87171;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .tab-bar { display: flex; gap: 8px; }
+  .tab-btn {
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .tab-btn.active {
+    background: var(--accent);
+    color: #0a0a0f;
+    font-weight: 600;
+    border-color: var(--accent);
+  }
+
+  /* ── VIEWS ── */
+  .view { display: none; padding: 40px; max-width: 1100px; margin: 0 auto; }
+  .view.active { display: block; }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+  .section-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  /* ── FORM ROW ── */
+  .form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+  label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  input, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: #0a0a0f; }
+  .btn-primary:hover { opacity: .85; transform: translateY(-1px); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+  /* ── STUDENT GRID ── */
+  #student-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .student-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    transition: border-color .2s;
+  }
+  .student-card:hover { border-color: var(--accent2); }
+  .student-card .avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: #0a0a0f;
+    margin: 0 auto 12px;
+  }
+  .student-card .s-name { font-weight: 600; margin-bottom: 4px; }
+  .student-card .s-id { font-size: 0.75rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 14px; }
+  .student-card .card-actions { display: flex; gap: 8px; justify-content: center; }
+  .del-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: transparent; border: none; color: var(--muted);
+    cursor: pointer; font-size: 1rem; line-height: 1;
+    transition: color .2s;
+  }
+  .del-btn:hover { color: var(--danger); }
+
+  /* ── QR MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 40px;
+    text-align: center;
+    max-width: 360px;
+    width: 90%;
+    position: relative;
+    animation: pop .25s ease;
+  }
+  @keyframes pop {
+    from { transform: scale(.9); opacity: 0; }
+    to   { transform: scale(1);  opacity: 1; }
+  }
+  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; margin-bottom: 4px; }
+  .modal p  { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
+  #qr-container canvas, #qr-container img {
+    border-radius: 8px;
+    border: 6px solid #fff;
+    margin-bottom: 20px;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: var(--muted);
+    font-size: 1.4rem; cursor: pointer;
+  }
+  .instructions {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: left;
+    line-height: 1.6;
+  }
+  .instructions strong { color: var(--accent); }
+
+  /* ── ATTENDANCE VIEW ── */
+  .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 28px;
+    flex: 1; min-width: 140px;
+  }
+  .stat-box .s-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing:.05em; }
+  .stat-box .s-val  { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-top: 4px; }
+  .stat-box.green .s-val { color: var(--accent); }
+  .stat-box.purple .s-val { color: var(--accent2); }
+
+  .filter-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { border-bottom: 2px solid var(--border); }
+  th { font-size: .75rem; text-transform: uppercase; letter-spacing:.05em; color: var(--muted); padding: 10px 14px; text-align: left; }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: .9rem; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface2); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 600;
+  }
+  .badge-present { background: rgba(110,231,183,.15); color: var(--accent); }
+  .badge-late    { background: rgba(251,191,36,.15);  color: #fbbf24; }
+
+  /* ── SCAN VIEW (student page) ── */
+  .scan-wrap {
+    max-width: 440px; margin: 0 auto;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 24px; padding-top: 20px;
+  }
+  .scan-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 36px;
+    width: 100%;
+    text-align: center;
+  }
+  .scan-card .icon { font-size: 3rem; margin-bottom: 12px; }
+  .scan-card h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; margin-bottom: 8px; }
+  .scan-card .desc { color: var(--muted); font-size: .9rem; margin-bottom: 24px; }
+  .scan-card input {
+    width: 100%;
+    font-size: 1.4rem;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .1em;
+    margin-bottom: 16px;
+  }
+  .result-box {
+    display: none;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-top: 12px;
+  }
+  .result-ok  { background: rgba(110,231,183,.15); color: var(--accent); border: 1px solid rgba(110,231,183,.3); }
+  .result-dup { background: rgba(251,191,36,.15);  color: #fbbf24;       border: 1px solid rgba(251,191,36,.3); }
+  .result-err { background: rgba(248,113,113,.15); color: var(--danger);  border: 1px solid rgba(248,113,113,.3); }
+
+  /* ── CONFIG VIEW ── */
+  .config-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .config-item { flex: 1; min-width: 220px; }
+  .config-item label { display: block; margin-bottom: 6px; }
+
+  /* ── SPREADSHEET CTA ── */
+  .gs-cta {
+    display: flex; align-items: center; gap: 16px;
+    background: linear-gradient(135deg, rgba(110,231,183,.1), rgba(129,140,248,.1));
+    border: 1px solid rgba(110,231,183,.2);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .gs-cta .gs-icon { font-size: 2rem; }
+  .gs-cta .gs-text h4 { font-weight: 600; margin-bottom: 2px; }
+  .gs-cta .gs-text p  { font-size: .82rem; color: var(--muted); }
+  .gs-cta a {
+    margin-left: auto;
+    padding: 9px 20px;
+    border-radius: 8px;
+    background: #0f9d58;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .85rem;
+    transition: opacity .2s;
+  }
+  .gs-cta a:hover { opacity: .85; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .ei { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: .95rem; }
+
+  @media (max-width: 600px) {
+    header { flex-direction: column; gap: 16px; padding: 16px 20px; }
+    .view { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📋 AsistenciaQR</h1>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('alumnos')">👥 Alumnos</button>
+    <button class="tab-btn" onclick="switchTab('asistencia')">📊 Asistencia</button>
+    <button class="tab-btn" onclick="switchTab('escanear')">📷 Escanear</button>
+    <button class="tab-btn" onclick="switchTab('config')">⚙️ Configuración</button>
+  </div>
+</header>
+
+<!-- ════════════════════════ VIEW: ALUMNOS ════════════════════════ -->
+<div id="view-alumnos" class="view active">
+  <div class="section-title">Gestión de Alumnos</div>
+  <div class="section-sub">Agrega alumnos y genera su código QR personal.</div>
+
+  <div class="card">
+    <div class="form-row">
+      <div class="field">
+        <label>Nombre completo</label>
+        <input id="inp-name" type="text" placeholder="Ej. María García López">
+      </div>
+      <div class="field" style="max-width:180px">
+        <label>Matrícula / ID</label>
+        <input id="inp-id" type="text" placeholder="Ej. 2024001">
+      </div>
+      <button class="btn btn-primary" onclick="addStudent()">＋ Agregar</button>
+    </div>
+  </div>
+
+  <div id="student-list"></div>
+  <div id="empty-students" class="empty-state" style="display:none">
+    <div class="ei">👤</div>
+    <p>Aún no hay alumnos. Agrega el primero arriba.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════ VIEW: ASISTENCIA ════════════════════════ -->
+<div id="view-asistencia" class="view">
+  <div class="section-title">Registro de Asistencia</div>
+  <div class="section-sub">Historial de todas las asistencias registradas vía QR.</div>
+
+  <div class="gs-cta">
+    <div class="gs-icon">📊</div>
+    <div class="gs-text">
+      <h4>Google Sheets</h4>
+      <p>Abre tu hoja de cálculo para ver y editar la asistencia en Drive.</p>
+    </div>
+    <a id="gs-link" href="#" target="_blank">Abrir en Google Sheets ↗</a>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box green">
+      <div class="s-label">Registros hoy</div>
+      <div class="s-val" id="stat-today">0</div>
+    </div>
+    <div class="stat-box purple">
+      <div class="s-label">Total registros</div>
+      <div class="s-val" id="stat-total">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="s-label">Alumnos registrados</div>
+      <div class="s-val" id="stat-students">0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filter-row">
+      <div class="field" style="max-width:200px">
+        <label>Filtrar por fecha</label>
+        <input type="date" id="filter-date">
+      </div>
+      <div class="field" style="max-width:200px">
+        <label>Buscar alumno</label>
+        <input type="text" id="filter-name" placeholder="Nombre...">
+      </div>
+      <div style="align-self:flex-end; display:flex; gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="applyFilter()">Filtrar</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearFilter()">Limpiar</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAttendance()">🗑 Limpiar todo</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table id="att-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Matrícula</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="att-body"></tbody>
+      </table>
+    </div>
+    <div id="att-empty" class="empty-state" style="display:none">
+      <div class="ei">📭</div>
+      <p>No hay asistencias registradas aún.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ VIEW: ESCANEAR ════════════════════════ -->
+<div id="view-escanear" class="view">
+  <div class="section-title">Registro de Asistencia</div>
+  <div class="section-sub">El alumno escanea su QR y la cámara del celular abre esta página automáticamente.</div>
+
+  <div class="scan-wrap">
+    <div class="scan-card">
+      <div class="icon">📷</div>
+      <h2>Registrar Asistencia</h2>
+      <p class="desc">Ingresa tu código o escanea el QR. El código se detecta automáticamente.</p>
+      <input id="scan-input" type="text" placeholder="TU CÓDIGO" autocomplete="off"
+        oninput="onScanInput(this.value)" onkeydown="if(event.key==='Enter') registerAttendance()">
+      <button class="btn btn-primary" style="width:100%" onclick="registerAttendance()">✓ Registrar Asistencia</button>
+      <div id="scan-result" class="result-box"></div>
+    </div>
+
+    <div class="card" style="width:100%; margin-bottom:0">
+      <p style="font-size:.82rem; color:var(--muted); line-height:1.7">
+        <strong style="color:var(--accent)">¿Cómo funciona?</strong><br>
+        1. El profesor genera el QR de cada alumno desde la pestaña <em>Alumnos</em>.<br>
+        2. El QR lleva directamente a esta página con el código prellenado.<br>
+        3. El alumno solo presiona <strong>Registrar Asistencia</strong>.<br>
+        4. La asistencia queda guardada y visible en la pestaña <em>Asistencia</em>.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ VIEW: CONFIG ════════════════════════ -->
+<div id="view-config" class="view">
+  <div class="section-title">Configuración</div>
+  <div class="section-sub">Configura tu Google Sheets para guardar la asistencia.</div>
+
+  <div class="card">
+    <h3 style="margin-bottom:20px; font-family:'DM Serif Display',serif">Integración con Google Sheets</h3>
+    <div class="config-row">
+      <div class="config-item">
+        <label>URL de tu Google Sheet</label>
+        <input id="cfg-gs-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/...">
+      </div>
+      <div class="config-item">
+        <label>Nombre del curso / materia</label>
+        <input id="cfg-course" type="text" placeholder="Ej. Cálculo I — Grupo A">
+      </div>
+    </div>
+    <div style="margin-top:20px">
+      <label>URL base de esta página (para los QR)</label>
+      <input id="cfg-base-url" type="url" placeholder="https://midominio.com/asistencia.html">
+    </div>
+    <p style="font-size:.8rem; color:var(--muted); margin-top:8px">
+      Si usas esta página localmente, el QR ya usa la URL correcta automáticamente.
+    </p>
+    <div style="margin-top:24px">
+      <button class="btn btn-primary" onclick="saveConfig()">Guardar configuración</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:16px; font-family:'DM Serif Display',serif">📋 Instrucciones: Conectar Google Sheets</h3>
+    <ol style="color:var(--muted); font-size:.88rem; line-height:2; padding-left:20px">
+      <li>Crea una hoja de cálculo en <a href="https://sheets.google.com" target="_blank" style="color:var(--accent)">Google Sheets</a>.</li>
+      <li>Agrega los encabezados: <code style="background:var(--surface2); padding:1px 6px; border-radius:4px">Nombre | Matrícula | Fecha | Hora | Estado</code></li>
+      <li>Ve a <strong>Extensiones → Apps Script</strong> y pega el siguiente código:</li>
+    </ol>
+    <pre style="background:var(--surface2); border-radius:8px; padding:16px; margin-top:12px; overflow-x:auto; font-family:'DM Mono',monospace; font-size:.78rem; color:#a5b4fc; line-height:1.6">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data  = JSON.parse(e.postData.contents);
+  sheet.appendRow([data.nombre, data.matricula, data.fecha, data.hora, data.estado]);
+  return ContentService
+    .createTextOutput(JSON.stringify({ok: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+    </pre>
+    <ol start="4" style="color:var(--muted); font-size:.88rem; line-height:2; padding-left:20px; margin-top:12px">
+      <li>Despliega como <strong>Aplicación web</strong> (acceso: <em>Cualquiera</em>).</li>
+      <li>Copia la URL del deployment y pégala abajo como <strong>Webhook URL</strong>:</li>
+    </ol>
+    <div style="margin-top:12px">
+      <label style="font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em">Webhook URL (Apps Script)</label>
+      <input id="cfg-webhook" type="url" placeholder="https://script.google.com/macros/s/..." style="margin-top:6px; width:100%">
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn btn-ghost btn-sm" onclick="testWebhook()">Probar conexión</button>
+      <span id="webhook-status" style="margin-left:12px; font-size:.82rem"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════ QR MODAL ════════════════════════ -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="qr-modal-name">—</h3>
+    <p id="qr-modal-id">Matrícula: —</p>
+    <div id="qr-container"></div>
+    <div class="instructions">
+      <strong>Para el alumno:</strong><br>
+      Escanea con la cámara de tu celular. Te llevará directo al formulario de asistencia con tu código prellenado.
+    </div>
+    <div style="margin-top:16px; display:flex; gap:8px; justify-content:center">
+      <button class="btn btn-ghost btn-sm" onclick="printQR()">🖨 Imprimir</button>
+      <button class="btn btn-primary btn-sm" onclick="downloadQR()">⬇ Descargar PNG</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────
+let students   = JSON.parse(localStorage.getItem('aqr_students')   || '[]');
+let attendance = JSON.parse(localStorage.getItem('aqr_attendance') || '[]');
+let config     = JSON.parse(localStorage.getItem('aqr_config')     || '{}');
+let currentQRStudent = null;
+
+// ── TABS ───────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'asistencia') renderAttendance();
+  if (tab === 'alumnos')    renderStudents();
+  if (tab === 'config')     loadConfig();
+  if (tab === 'escanear')   checkURLCode();
+}
+
+// ── STUDENTS ───────────────────────────────────────────────
+function saveStudents() { localStorage.setItem('aqr_students', JSON.stringify(students)); }
+
+function addStudent() {
+  const name = document.getElementById('inp-name').value.trim();
+  const id   = document.getElementById('inp-id').value.trim();
+  if (!name) return alert('Ingresa el nombre del alumno.');
+  const code = id || ('A' + Date.now().toString(36).toUpperCase());
+  students.push({ name, id: code, uid: crypto.randomUUID() });
+  saveStudents();
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-id').value   = '';
+  renderStudents();
+}
+
+function deleteStudent(uid) {
+  if (!confirm('¿Eliminar este alumno?')) return;
+  students = students.filter(s => s.uid !== uid);
+  saveStudents();
+  renderStudents();
+}
+
+function renderStudents() {
+  const list = document.getElementById('student-list');
+  const emp  = document.getElementById('empty-students');
+  list.innerHTML = '';
+  if (!students.length) { emp.style.display = 'block'; return; }
+  emp.style.display = 'none';
+  students.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'student-card';
+    div.innerHTML = `
+      <button class="del-btn" onclick="deleteStudent('${s.uid}')">✕</button>
+      <div class="avatar">${s.name.charAt(0)}</div>
+      <div class="s-name">${s.name}</div>
+      <div class="s-id">${s.id}</div>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="showQR('${s.uid}')">🔲 Ver QR</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+// ── QR MODAL ───────────────────────────────────────────────
+function showQR(uid) {
+  const s = students.find(x => x.uid === uid);
+  if (!s) return;
+  currentQRStudent = s;
+  document.getElementById('qr-modal-name').textContent = s.name;
+  document.getElementById('qr-modal-id').textContent   = 'Matrícula: ' + s.id;
+  const container = document.getElementById('qr-container');
+  container.innerHTML = '';
+  const base = config.baseUrl || window.location.href.split('?')[0];
+  const url  = `${base}?code=${encodeURIComponent(s.id)}&tab=escanear`;
+  new QRCode(container, { text: url, width: 200, height: 200, colorDark: '#0a0a0f', colorLight: '#ffffff' });
+  document.getElementById('qr-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('qr-modal').classList.remove('open'); }
+
+function downloadQR() {
+  const canvas = document.querySelector('#qr-container canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = `QR_${currentQRStudent.name.replace(/\s+/g,'_')}.png`;
+  a.href = canvas.toDataURL();
+  a.click();
+}
+
+function printQR() {
+  const canvas = document.querySelector('#qr-container canvas');
+  if (!canvas) return;
+  const img = canvas.toDataURL();
+  const w = window.open('');
+  w.document.write(`<html><body style="text-align:center;font-family:sans-serif">
+    <h2>${currentQRStudent.name}</h2>
+    <p>Matrícula: ${currentQRStudent.id}</p>
+    <img src="${img}" style="width:260px">
+    <p style="color:#888;font-size:.85rem">Escanea para registrar asistencia</p>
+    <script>window.onload=()=>window.print()<\/script>
+  </body></html>`);
+}
+
+// ── ATTENDANCE ─────────────────────────────────────────────
+function saveAttendance() { localStorage.setItem('aqr_attendance', JSON.stringify(attendance)); }
+
+function registerAttendance() {
+  const code = document.getElementById('scan-input').value.trim().toUpperCase();
+  const result = document.getElementById('scan-result');
+  if (!code) { showResult('error', '⚠️ Ingresa tu código.'); return; }
+
+  const student = students.find(s => s.id.toUpperCase() === code);
+  if (!student) { showResult('error', '❌ Código no encontrado. Verifica tu QR.'); return; }
+
+  const now   = new Date();
+  const today = now.toLocaleDateString('es-MX');
+  const time  = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+  const alreadyToday = attendance.find(a => a.uid === student.uid && a.date === today);
+  if (alreadyToday) { showResult('dup', `⚠️ ${student.name}, ya registraste asistencia hoy (${alreadyToday.time}).`); return; }
+
+  const config = JSON.parse(localStorage.getItem('aqr_config') || '{}');
+  const cutoff = config.lateCutoff || '09:10';
+  const status = time <= cutoff ? 'Presente' : 'Tarde';
+
+  const record = { uid: student.uid, name: student.name, id: student.id, date: today, time, status };
+  attendance.unshift(record);
+  saveAttendance();
+  sendToSheets(record);
+  showResult('ok', `✅ ¡Hola, ${student.name}! Asistencia registrada — ${status}`);
+  document.getElementById('scan-input').value = '';
+}
+
+function showResult(type, msg) {
+  const el = document.getElementById('scan-result');
+  el.className = 'result-box ' + (type === 'ok' ? 'result-ok' : type === 'dup' ? 'result-dup' : 'result-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+function onScanInput(v) {
+  // Auto-register if the value looks complete (e.g. from a QR scanner that sends Enter)
+}
+
+function checkURLCode() {
+  const params = new URLSearchParams(window.location.search);
+  const code   = params.get('code');
+  if (code) {
+    document.getElementById('scan-input').value = code.toUpperCase();
+  }
+}
+
+// ── RENDER ATTENDANCE ──────────────────────────────────────
+function renderAttendance(filtered) {
+  const data  = filtered !== undefined ? filtered : attendance;
+  const tbody = document.getElementById('att-body');
+  const empty = document.getElementById('att-empty');
+  tbody.innerHTML = '';
+
+  const today = new Date().toLocaleDateString('es-MX');
+  document.getElementById('stat-today').textContent    = attendance.filter(a => a.date === today).length;
+  document.getElementById('stat-total').textContent    = attendance.length;
+  document.getElementById('stat-students').textContent = students.length;
+
+  const gsUrl = config.gsUrl || '#';
+  document.getElementById('gs-link').href = gsUrl;
+
+  if (!data.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  data.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${i+1}</td>
+      <td>${r.name}</td>
+      <td><span style="font-family:'DM Mono',monospace;font-size:.8rem">${r.id}</span></td>
+      <td>${r.date}</td>
+      <td>${r.time}</td>
+      <td><span class="badge ${r.status==='Presente'?'badge-present':'badge-late'}">${r.status}</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function applyFilter() {
+  const date = document.getElementById('filter-date').value;
+  const name = document.getElementById('filter-name').value.toLowerCase();
+  let f = attendance;
+  if (date) {
+    const d = new Date(date + 'T00:00:00').toLocaleDateString('es-MX');
+    f = f.filter(a => a.date === d);
+  }
+  if (name) f = f.filter(a => a.name.toLowerCase().includes(name));
+  renderAttendance(f);
+}
+
+function clearFilter() {
+  document.getElementById('filter-date').value = '';
+  document.getElementById('filter-name').value = '';
+  renderAttendance();
+}
+
+function clearAttendance() {
+  if (!confirm('¿Eliminar TODOS los registros de asistencia?')) return;
+  attendance = [];
+  saveAttendance();
+  renderAttendance();
+}
+
+function exportCSV() {
+  const header = 'Nombre,Matrícula,Fecha,Hora,Estado\n';
+  const rows   = attendance.map(a => `${a.name},${a.id},${a.date},${a.time},${a.status}`).join('\n');
+  const blob   = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+  const url    = URL.createObjectURL(blob);
+  const a      = document.createElement('a');
+  a.href = url; a.download = 'asistencia.csv'; a.click();
+}
+
+// ── GOOGLE SHEETS WEBHOOK ──────────────────────────────────
+async function sendToSheets(record) {
+  const cfg = JSON.parse(localStorage.getItem('aqr_config') || '{}');
+  if (!cfg.webhook) return;
+  try {
+    await fetch(cfg.webhook, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre: record.name, matricula: record.id,
+        fecha: record.date, hora: record.time, estado: record.status
+      })
+    });
+  } catch(e) { console.warn('Sheets webhook error:', e); }
+}
+
+async function testWebhook() {
+  const url = document.getElementById('cfg-webhook').value.trim();
+  const st  = document.getElementById('webhook-status');
+  if (!url) { st.textContent = '⚠️ Ingresa la URL primero'; st.style.color = '#fbbf24'; return; }
+  st.textContent = '⏳ Probando...'; st.style.color = '#94a3b8';
+  try {
+    await fetch(url, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre:'TEST', matricula:'000', fecha:'hoy', hora:'00:00', estado:'Prueba' })
+    });
+    st.textContent = '✅ Conexión exitosa (revisa tu Sheet)'; st.style.color = '#6ee7b7';
+  } catch(e) {
+    st.textContent = '❌ Error de conexión'; st.style.color = '#f87171';
+  }
+}
+
+// ── CONFIG ─────────────────────────────────────────────────
+function saveConfig() {
+  config = {
+    gsUrl:      document.getElementById('cfg-gs-url').value.trim(),
+    course:     document.getElementById('cfg-course').value.trim(),
+    baseUrl:    document.getElementById('cfg-base-url').value.trim(),
+    webhook:    document.getElementById('cfg-webhook').value.trim(),
+    lateCutoff: '09:10'
+  };
+  localStorage.setItem('aqr_config', JSON.stringify(config));
+  alert('✅ Configuración guardada.');
+}
+
+function loadConfig() {
+  const c = JSON.parse(localStorage.getItem('aqr_config') || '{}');
+  document.getElementById('cfg-gs-url').value  = c.gsUrl    || '';
+  document.getElementById('cfg-course').value  = c.course   || '';
+  document.getElementById('cfg-base-url').value= c.baseUrl  || '';
+  document.getElementById('cfg-webhook').value = c.webhook  || '';
+}
+
+// ── INIT ───────────────────────────────────────────────────
+renderStudents();
+checkURLCode();
+
+// Handle ?tab= in URL
+const urlTab = new URLSearchParams(window.location.search).get('tab');
+if (urlTab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const tabView = document.getElementById('view-' + urlTab);
+  if (tabView) {
+    tabView.classList.add('active');
+    const btns = document.querySelectorAll('.tab-btn');
+    const idx  = ['alumnos','asistencia','escanear','config'].indexOf(urlTab);
+    if (idx >= 0) btns[idx].classList.add('active');
+    if (urlTab === 'escanear') checkURLCode();
+  }
+}
+</script>
+</body>
+</html>
