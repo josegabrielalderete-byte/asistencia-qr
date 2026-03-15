@@ -438,7 +438,7 @@
     <div class="scan-card">
       <div class="icon">📷</div>
       <h2>Registrar Asistencia</h2>
-      <p class="desc">Ingresa tu código o escanea el QR. El código se detecta automáticamente.</p>
+      <p class="desc">Escaneá tu QR con la cámara, ingresá tu DNI, o dejá que se complete solo si abriste esta página desde el QR.</p>
       <input id="scan-input" type="text" placeholder="TU CÓDIGO" autocomplete="off"
         oninput="onScanInput(this.value)" onkeydown="if(event.key==='Enter') registerAttendance()">
       <button class="btn btn-primary" style="width:100%" onclick="registerAttendance()">✓ Registrar Asistencia</button>
@@ -447,11 +447,10 @@
 
     <div class="card" style="width:100%; margin-bottom:0">
       <p style="font-size:.82rem; color:var(--muted); line-height:1.7">
-        <strong style="color:var(--accent)">¿Cómo funciona?</strong><br>
-        1. El profesor genera el QR de cada alumno desde la pestaña <em>Alumnos</em>.<br>
-        2. El QR lleva directamente a esta página con el código prellenado.<br>
-        3. El alumno solo presiona <strong>Registrar Asistencia</strong>.<br>
-        4. La asistencia queda guardada y visible en la pestaña <em>Asistencia</em>.
+        <strong style="color:var(--accent)">¿Cómo registrar tu asistencia?</strong><br>
+        <strong>Opción 1 — QR:</strong> Abrí cualquier app lectora de QR, escaneá tu código y se registra solo.<br>
+        <strong>Opción 2 — Manual:</strong> Escribí tu número de DNI arriba y presioná <em>Registrar</em>.<br>
+        <strong>Opción 3 — Link directo:</strong> Abrí el link que está impreso debajo de tu QR.
       </p>
     </div>
   </div>
@@ -684,7 +683,15 @@ function checkURLCode() {
   const params = new URLSearchParams(window.location.search);
   const code   = params.get('code');
   if (code) {
+    // Auto-switch to escanear tab
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-escanear').classList.add('active');
+    document.querySelectorAll('.tab-btn')[2].classList.add('active');
+    // Fill the code
     document.getElementById('scan-input').value = code.toUpperCase();
+    // Auto-register after short delay so user sees what's happening
+    setTimeout(() => registerAttendance(), 800);
   }
 }
 
