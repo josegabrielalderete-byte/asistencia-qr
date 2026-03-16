@@ -2,379 +2,157 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Asistencia QR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AsistenciaQR</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c26;
-    --border: #2a2a38;
-    --accent: #6ee7b7;
-    --accent2: #818cf8;
-    --danger: #f87171;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --radius: 12px;
-  }
+:root {
+  --bg:#0a0a0f; --surface:#13131a; --surface2:#1c1c26;
+  --border:#2a2a38; --accent:#6ee7b7; --accent2:#818cf8;
+  --danger:#f87171; --text:#e2e8f0; --muted:#64748b; --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--surface)}
+header h1{font-family:'DM Serif Display',serif;font-size:1.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tab-bar{display:flex;gap:6px;flex-wrap:wrap}
+.tab-btn{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--accent);color:#0a0a0f;font-weight:600;border-color:var(--accent)}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-  }
+/* VIEWS */
+.view{display:none;padding:28px 20px;max-width:600px;margin:0 auto}
+.view.active{display:block}
+.section-title{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:6px}
+.section-sub{color:var(--muted);font-size:.88rem;margin-bottom:24px}
 
-  /* ── HEADER ── */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 40px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-  }
-  header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.5rem;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .tab-bar { display: flex; gap: 8px; }
-  .tab-btn {
-    padding: 8px 20px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all .2s;
-  }
-  .tab-btn.active {
-    background: var(--accent);
-    color: #0a0a0f;
-    font-weight: 600;
-    border-color: var(--accent);
-  }
+/* CARDS & FORMS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:20px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+input,select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.92rem;outline:none;transition:border-color .2s;width:100%}
+input:focus,select:focus{border-color:var(--accent)}
 
-  /* ── VIEWS ── */
-  .view { display: none; padding: 40px; max-width: 1100px; margin: 0 auto; }
-  .view.active { display: block; }
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:#0a0a0f}
+.btn-primary:hover{opacity:.85;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 14px;font-size:.8rem}
 
-  /* ── SECTION TITLES ── */
-  .section-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-  }
-  .section-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+/* STUDENT GRID */
+#student-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:20px}
+.student-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;position:relative;transition:border-color .2s}
+.student-card:hover{border-color:var(--accent2)}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:1.2rem;color:#0a0a0f;margin:0 auto 10px}
+.s-name{font-weight:600;font-size:.88rem;margin-bottom:3px}
+.s-id{font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:12px}
+.del-btn{position:absolute;top:8px;right:8px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.95rem;transition:color .2s}
+.del-btn:hover{color:var(--danger)}
 
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 24px;
-  }
+/* QR MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px;text-align:center;max-width:340px;width:92%;position:relative;animation:pop .25s ease}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h3{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:4px}
+.modal p{color:var(--muted);font-size:.82rem;margin-bottom:18px}
+#qr-container canvas,#qr-container img{border-radius:8px;border:6px solid #fff;margin-bottom:16px}
+.modal-close{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
 
-  /* ── FORM ROW ── */
-  .form-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
-  .field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
-  label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  input, select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.92rem;
-    outline: none;
-    transition: border-color .2s;
-  }
-  input:focus, select:focus { border-color: var(--accent); }
+/* ── CONFIRM SCREEN (anti-fraud) ── */
+.confirm-screen{
+  display:none; position:fixed; inset:0;
+  background:var(--bg); z-index:200;
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:32px; text-align:center;
+}
+.confirm-screen.open{display:flex}
+.confirm-avatar{
+  width:90px;height:90px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:2.5rem;color:#0a0a0f;
+  margin-bottom:20px;
+  animation:pop .3s ease;
+}
+.confirm-name{font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:6px}
+.confirm-dni{font-size:.88rem;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:8px}
+.confirm-date{font-size:.82rem;color:var(--muted);margin-bottom:32px}
+.btn-presente{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff;font-weight:800;border:none;
+  padding:20px 48px;border-radius:16px;
+  font-family:'DM Sans',sans-serif;font-size:1.3rem;
+  cursor:pointer;width:100%;max-width:320px;
+  box-shadow:0 8px 32px rgba(34,197,94,.35);
+  transition:transform .15s,opacity .2s;
+  letter-spacing:.02em;
+}
+.btn-presente:hover{transform:scale(1.03);opacity:.92}
+.btn-presente:active{transform:scale(.97)}
+.btn-cancelar{
+  background:transparent;color:var(--muted);border:none;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;
+  cursor:pointer;margin-top:16px;text-decoration:underline;
+}
+.confirm-success{
+  display:none;flex-direction:column;align-items:center;
+}
+.success-icon{font-size:5rem;margin-bottom:16px;animation:pop .4s ease}
+.success-msg{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:8px;color:var(--accent)}
+.success-sub{color:var(--muted);font-size:.9rem}
 
-  /* ── BUTTONS ── */
-  .btn {
-    padding: 10px 22px;
-    border-radius: 8px;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all .2s;
-    white-space: nowrap;
-  }
-  .btn-primary { background: var(--accent); color: #0a0a0f; }
-  .btn-primary:hover { opacity: .85; transform: translateY(-1px); }
-  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-  .btn-danger:hover { background: var(--danger); color: #fff; }
-  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+/* ATTENDANCE TABLE */
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 22px;flex:1;min-width:120px}
+.stat-box .s-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.stat-box .s-val{font-family:'DM Serif Display',serif;font-size:1.8rem;margin-top:3px}
+.stat-box.green .s-val{color:var(--accent)}
+.stat-box.purple .s-val{color:var(--accent2)}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:2px solid var(--border)}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:9px 12px;text-align:left}
+td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:.88rem}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:600}
+.badge-present{background:rgba(110,231,183,.15);color:var(--accent)}
+.badge-late{background:rgba(251,191,36,.15);color:#fbbf24}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty-state .ei{font-size:2.5rem;margin-bottom:10px}
 
-  /* ── STUDENT GRID ── */
-  #student-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 16px;
-    margin-top: 24px;
-  }
-  .student-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-    position: relative;
-    transition: border-color .2s;
-  }
-  .student-card:hover { border-color: var(--accent2); }
-  .student-card .avatar {
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.4rem;
-    color: #0a0a0f;
-    margin: 0 auto 12px;
-  }
-  .student-card .s-name { font-weight: 600; margin-bottom: 4px; }
-  .student-card .s-id { font-size: 0.75rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 14px; }
-  .student-card .card-actions { display: flex; gap: 8px; justify-content: center; }
-  .del-btn {
-    position: absolute; top: 10px; right: 10px;
-    background: transparent; border: none; color: var(--muted);
-    cursor: pointer; font-size: 1rem; line-height: 1;
-    transition: color .2s;
-  }
-  .del-btn:hover { color: var(--danger); }
+/* CAMERA */
+.cam-wrap{position:relative;width:100%;max-width:300px;margin:0 auto 14px;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:1}
+#cam-video{width:100%;height:100%;object-fit:cover;display:block}
+.cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.cam-frame{width:65%;height:65%;border:3px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);animation:pulse-frame 2s ease-in-out infinite}
+@keyframes pulse-frame{0%,100%{border-color:var(--accent)}50%{border-color:var(--accent2)}}
+.cam-line{position:absolute;left:17.5%;right:17.5%;height:2px;background:var(--accent);animation:scan-line 2s linear infinite;box-shadow:0 0 8px var(--accent)}
+@keyframes scan-line{0%{top:17.5%}100%{top:82.5%}}
+.cam-status{font-size:.78rem;color:var(--muted);margin-bottom:10px;min-height:18px;text-align:center}
+.btn-cam{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0a0a0f;font-weight:700;border:none;padding:14px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .2s,transform .15s}
+.btn-cam:hover{opacity:.88;transform:translateY(-1px)}
+.btn-cam:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-stop{background:transparent;color:var(--danger);border:1px solid var(--danger);padding:9px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;width:100%;margin-bottom:10px;transition:all .2s}
+.btn-stop:hover{background:var(--danger);color:#fff}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.75rem;margin:10px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  /* ── QR MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.75);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 40px;
-    text-align: center;
-    max-width: 360px;
-    width: 90%;
-    position: relative;
-    animation: pop .25s ease;
-  }
-  @keyframes pop {
-    from { transform: scale(.9); opacity: 0; }
-    to   { transform: scale(1);  opacity: 1; }
-  }
-  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; margin-bottom: 4px; }
-  .modal p  { color: var(--muted); font-size: .85rem; margin-bottom: 20px; }
-  #qr-container canvas, #qr-container img {
-    border-radius: 8px;
-    border: 6px solid #fff;
-    margin-bottom: 20px;
-  }
-  .modal-close {
-    position: absolute; top: 16px; right: 20px;
-    background: none; border: none; color: var(--muted);
-    font-size: 1.4rem; cursor: pointer;
-  }
-  .instructions {
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 14px;
-    font-size: 0.8rem;
-    color: var(--muted);
-    text-align: left;
-    line-height: 1.6;
-  }
-  .instructions strong { color: var(--accent); }
+/* GS CTA */
+.gs-cta{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(110,231,183,.1),rgba(129,140,248,.1));border:1px solid rgba(110,231,183,.2);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;flex-wrap:wrap}
+.gs-cta a{margin-left:auto;padding:8px 16px;border-radius:8px;background:#0f9d58;color:#fff;text-decoration:none;font-weight:600;font-size:.82rem}
 
-  /* ── ATTENDANCE VIEW ── */
-  .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
-  .stat-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 28px;
-    flex: 1; min-width: 140px;
-  }
-  .stat-box .s-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing:.05em; }
-  .stat-box .s-val  { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-top: 4px; }
-  .stat-box.green .s-val { color: var(--accent); }
-  .stat-box.purple .s-val { color: var(--accent2); }
-
-  .filter-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { border-bottom: 2px solid var(--border); }
-  th { font-size: .75rem; text-transform: uppercase; letter-spacing:.05em; color: var(--muted); padding: 10px 14px; text-align: left; }
-  td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: .9rem; }
-  tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--surface2); }
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: .75rem;
-    font-weight: 600;
-  }
-  .badge-present { background: rgba(110,231,183,.15); color: var(--accent); }
-  .badge-late    { background: rgba(251,191,36,.15);  color: #fbbf24; }
-
-  /* ── SCAN VIEW (student page) ── */
-  .scan-wrap {
-    max-width: 440px; margin: 0 auto;
-    display: flex; flex-direction: column; align-items: center;
-    gap: 24px; padding-top: 20px;
-  }
-  .scan-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 36px;
-    width: 100%;
-    text-align: center;
-  }
-  .scan-card .icon { font-size: 3rem; margin-bottom: 12px; }
-  .scan-card h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; margin-bottom: 8px; }
-  .scan-card .desc { color: var(--muted); font-size: .9rem; margin-bottom: 24px; }
-  .scan-card input {
-    width: 100%;
-    font-size: 1.4rem;
-    text-align: center;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: .1em;
-    margin-bottom: 16px;
-  }
-  .result-box {
-    display: none;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 1rem;
-    margin-top: 12px;
-  }
-  .result-ok  { background: rgba(110,231,183,.15); color: var(--accent); border: 1px solid rgba(110,231,183,.3); }
-  .result-dup { background: rgba(251,191,36,.15);  color: #fbbf24;       border: 1px solid rgba(251,191,36,.3); }
-  .result-err { background: rgba(248,113,113,.15); color: var(--danger);  border: 1px solid rgba(248,113,113,.3); }
-
-  /* ── CAMERA SCANNER ── */
-  .cam-wrap {
-    position: relative; width: 100%; max-width: 320px;
-    margin: 0 auto 16px; border-radius: 16px; overflow: hidden;
-    background: #000; aspect-ratio: 1;
-  }
-  #cam-video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cam-overlay {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none;
-  }
-  .cam-frame {
-    width: 65%; height: 65%;
-    border: 3px solid var(--accent);
-    border-radius: 12px;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,.5);
-    animation: pulse-frame 2s ease-in-out infinite;
-  }
-  @keyframes pulse-frame {
-    0%,100% { border-color: var(--accent); }
-    50%      { border-color: var(--accent2); }
-  }
-  .cam-line {
-    position: absolute; left: 17.5%; right: 17.5%;
-    height: 2px; background: var(--accent);
-    animation: scan-line 2s linear infinite;
-    box-shadow: 0 0 8px var(--accent);
-  }
-  @keyframes scan-line { 0% { top: 17.5%; } 100% { top: 82.5%; } }
-  .cam-status { font-size: .8rem; color: var(--muted); margin-bottom: 10px; min-height: 18px; text-align:center; }
-  .btn-cam {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #0a0a0f; font-weight: 700; border: none;
-    padding: 14px; border-radius: 12px;
-    font-family: 'DM Sans', sans-serif; font-size: 1rem;
-    cursor: pointer; width: 100%; margin-bottom: 10px;
-    transition: opacity .2s, transform .15s;
-  }
-  .btn-cam:hover { opacity: .88; transform: translateY(-1px); }
-  .btn-cam:disabled { opacity: .4; cursor: not-allowed; transform: none; }
-  .btn-stop {
-    background: transparent; color: var(--danger);
-    border: 1px solid var(--danger);
-    padding: 9px; border-radius: 10px;
-    font-family: 'DM Sans', sans-serif; font-size: .88rem;
-    cursor: pointer; width: 100%; margin-bottom: 10px;
-    transition: all .2s;
-  }
-  .btn-stop:hover { background: var(--danger); color: #fff; }
-  .divider { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:.78rem; margin:10px 0; }
-  .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
-
-  /* ── CONFIG VIEW ── */
-  .config-row { display: flex; gap: 16px; flex-wrap: wrap; }
-  .config-item { flex: 1; min-width: 220px; }
-  .config-item label { display: block; margin-bottom: 6px; }
-
-  /* ── SPREADSHEET CTA ── */
-  .gs-cta {
-    display: flex; align-items: center; gap: 16px;
-    background: linear-gradient(135deg, rgba(110,231,183,.1), rgba(129,140,248,.1));
-    border: 1px solid rgba(110,231,183,.2);
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-  .gs-cta .gs-icon { font-size: 2rem; }
-  .gs-cta .gs-text h4 { font-weight: 600; margin-bottom: 2px; }
-  .gs-cta .gs-text p  { font-size: .82rem; color: var(--muted); }
-  .gs-cta a {
-    margin-left: auto;
-    padding: 9px 20px;
-    border-radius: 8px;
-    background: #0f9d58;
-    color: #fff;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: .85rem;
-    transition: opacity .2s;
-  }
-  .gs-cta a:hover { opacity: .85; }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-  .empty-state .ei { font-size: 3rem; margin-bottom: 12px; }
-  .empty-state p { font-size: .95rem; }
-
-  @media (max-width: 600px) {
-    header { flex-direction: column; gap: 16px; padding: 16px 20px; }
-    .view { padding: 24px 16px; }
-  }
+@media(max-width:500px){
+  header{flex-direction:column;gap:12px;padding:14px 16px}
+  .view{padding:20px 14px}
+}
 </style>
 </head>
 <body>
@@ -382,253 +160,182 @@
 <header>
   <h1>📋 AsistenciaQR</h1>
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('alumnos')">👥 Alumnos</button>
-    <button class="tab-btn" onclick="switchTab('asistencia')">📊 Asistencia</button>
-    <button class="tab-btn" onclick="switchTab('escanear')">📷 Escanear</button>
-    <button class="tab-btn" onclick="switchTab('config')">⚙️ Configuración</button>
+    <button class="tab-btn active" onclick="switchTab('alumnos',this)">👥 Alumnos</button>
+    <button class="tab-btn" onclick="switchTab('asistencia',this)">📊 Asistencia</button>
+    <button class="tab-btn" onclick="switchTab('escanear',this)">📷 Escanear</button>
+    <button class="tab-btn" onclick="switchTab('config',this)">⚙️ Config</button>
   </div>
 </header>
 
-<!-- ════════════════════════ VIEW: ALUMNOS ════════════════════════ -->
+<!-- ══ ALUMNOS ══ -->
 <div id="view-alumnos" class="view active">
   <div class="section-title">Gestión de Alumnos</div>
-  <div class="section-sub">Agrega alumnos y genera su código QR personal.</div>
-
+  <div class="section-sub">Alumnos registrados: <strong id="count-students">0</strong></div>
   <div class="card">
-    <div class="form-row">
-      <div class="field">
-        <label>Nombre completo</label>
-        <input id="inp-name" type="text" placeholder="Ej. María García López">
-      </div>
-      <div class="field" style="max-width:180px">
-        <label>Matrícula / ID</label>
-        <input id="inp-id" type="text" placeholder="Ej. 2024001">
-      </div>
-      <button class="btn btn-primary" onclick="addStudent()">＋ Agregar</button>
-    </div>
+    <div class="field"><label>Nombre completo</label><input id="inp-name" type="text" placeholder="Ej. García, María"></div>
+    <div class="field"><label>DNI</label><input id="inp-id" type="text" placeholder="Ej. 46607967"></div>
+    <button class="btn btn-primary" onclick="addStudent()">＋ Agregar alumno</button>
   </div>
-
   <div id="student-list"></div>
-  <div id="empty-students" class="empty-state" style="display:none">
-    <div class="ei">👤</div>
-    <p>Aún no hay alumnos. Agrega el primero arriba.</p>
-  </div>
+  <div id="empty-students" class="empty-state"><div class="ei">👤</div><p>No hay alumnos aún.</p></div>
 </div>
 
-<!-- ════════════════════════ VIEW: ASISTENCIA ════════════════════════ -->
+<!-- ══ ASISTENCIA ══ -->
 <div id="view-asistencia" class="view">
   <div class="section-title">Registro de Asistencia</div>
-  <div class="section-sub">Historial de todas las asistencias registradas vía QR.</div>
-
   <div class="gs-cta">
-    <div class="gs-icon">📊</div>
-    <div class="gs-text">
-      <h4>Google Sheets</h4>
-      <p>Abre tu hoja de cálculo para ver y editar la asistencia en Drive.</p>
-    </div>
-    <a id="gs-link" href="#" target="_blank">Abrir en Google Sheets ↗</a>
+    <div>📊 <strong>Google Sheets</strong><br><small style="color:var(--muted)">Ver planilla en Drive</small></div>
+    <a id="gs-link" href="#" target="_blank">Abrir ↗</a>
   </div>
-
   <div class="stats-row">
-    <div class="stat-box green">
-      <div class="s-label">Registros hoy</div>
-      <div class="s-val" id="stat-today">0</div>
-    </div>
-    <div class="stat-box purple">
-      <div class="s-label">Total registros</div>
-      <div class="s-val" id="stat-total">0</div>
-    </div>
-    <div class="stat-box">
-      <div class="s-label">Alumnos registrados</div>
-      <div class="s-val" id="stat-students">0</div>
-    </div>
+    <div class="stat-box green"><div class="s-label">Hoy</div><div class="s-val" id="stat-today">0</div></div>
+    <div class="stat-box purple"><div class="s-label">Total</div><div class="s-val" id="stat-total">0</div></div>
+    <div class="stat-box"><div class="s-label">Alumnos</div><div class="s-val" id="stat-students">0</div></div>
   </div>
-
   <div class="card">
-    <div class="filter-row">
-      <div class="field" style="max-width:200px">
-        <label>Filtrar por fecha</label>
-        <input type="date" id="filter-date">
-      </div>
-      <div class="field" style="max-width:200px">
-        <label>Buscar alumno</label>
-        <input type="text" id="filter-name" placeholder="Nombre...">
-      </div>
-      <div style="align-self:flex-end; display:flex; gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="applyFilter()">Filtrar</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearFilter()">Limpiar</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
-        <button class="btn btn-danger btn-sm" onclick="clearAttendance()">🗑 Limpiar todo</button>
-      </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <input type="date" id="filter-date" style="flex:1;min-width:140px">
+      <input type="text" id="filter-name" placeholder="Buscar alumno..." style="flex:2;min-width:160px">
+      <button class="btn btn-ghost btn-sm" onclick="applyFilter()">Filtrar</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearFilter()">Limpiar</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAttendance()">🗑 Borrar</button>
     </div>
     <div style="overflow-x:auto">
-      <table id="att-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Matrícula</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody id="att-body"></tbody>
-      </table>
+      <table><thead><tr><th>#</th><th>Nombre</th><th>DNI</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr></thead>
+      <tbody id="att-body"></tbody></table>
     </div>
-    <div id="att-empty" class="empty-state" style="display:none">
-      <div class="ei">📭</div>
-      <p>No hay asistencias registradas aún.</p>
-    </div>
+    <div id="att-empty" class="empty-state" style="display:none"><div class="ei">📭</div><p>Sin registros.</p></div>
   </div>
 </div>
 
-<!-- ════════════════════════ VIEW: ESCANEAR ════════════════════════ -->
+<!-- ══ ESCANEAR ══ -->
 <div id="view-escanear" class="view">
-  <div class="section-title">Registro de Asistencia</div>
-  <div class="section-sub">Usá la cámara integrada para escanear tu QR, o ingresá tu DNI manualmente.</div>
-
-  <div class="scan-wrap">
-    <div class="scan-card">
-      <h2>📷 Escaneá tu QR</h2>
-      <p class="desc">Presioná el botón para abrir la cámara y apuntá al QR de tu tarjeta.</p>
-
-      <!-- Camera viewer -->
+  <div class="section-title">Registrar Asistencia</div>
+  <div class="section-sub">Escaneá tu QR o ingresá tu DNI.</div>
+  <div style="max-width:420px;margin:0 auto">
+    <div class="card" style="text-align:center">
+      <h2 style="font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:8px">📷 Escaneá tu QR</h2>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:18px">Presioná el botón, apuntá la cámara al QR de tu tarjeta y confirmá tu asistencia.</p>
       <div class="cam-wrap" id="cam-wrap" style="display:none">
         <video id="cam-video" autoplay playsinline muted></video>
         <canvas id="cam-canvas" style="display:none"></canvas>
-        <div class="cam-overlay">
-          <div class="cam-frame"></div>
-          <div class="cam-line"></div>
-        </div>
+        <div class="cam-overlay"><div class="cam-frame"></div><div class="cam-line"></div></div>
       </div>
-
       <div class="cam-status" id="cam-status"></div>
-
-      <button class="btn-cam" id="btn-open-cam" onclick="startCamera()">
-        📷 Abrir Cámara y Escanear QR
-      </button>
-      <button class="btn-stop" id="btn-stop-cam" style="display:none" onclick="stopCamera()">
-        ✕ Cerrar cámara
-      </button>
-
+      <button class="btn-cam" id="btn-open-cam" onclick="startCamera()">📷 Abrir Cámara y Escanear QR</button>
+      <button class="btn-stop" id="btn-stop-cam" style="display:none" onclick="stopCamera()">✕ Cerrar cámara</button>
       <div class="divider">o ingresá el DNI manualmente</div>
-
-      <input id="scan-input" type="text" placeholder="TU DNI" autocomplete="off"
-        oninput="onScanInput(this.value)" onkeydown="if(event.key==='Enter') registerAttendance()">
-      <button class="btn btn-primary" style="width:100%" onclick="registerAttendance()">✓ Registrar Asistencia</button>
-      <div id="scan-result" class="result-box"></div>
+      <input id="scan-input" type="text" placeholder="TU DNI" autocomplete="off" style="text-align:center;font-size:1.3rem;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:12px" onkeydown="if(event.key==='Enter') showConfirm()">
+      <button class="btn btn-primary" style="width:100%" onclick="showConfirm()">→ Continuar</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════ VIEW: CONFIG ════════════════════════ -->
+<!-- ══ CONFIG ══ -->
 <div id="view-config" class="view">
   <div class="section-title">Configuración</div>
-  <div class="section-sub">Configura tu Google Sheets para guardar la asistencia.</div>
-
   <div class="card">
-    <h3 style="margin-bottom:20px; font-family:'DM Serif Display',serif">Integración con Google Sheets</h3>
-    <div class="config-row">
-      <div class="config-item">
-        <label>URL de tu Google Sheet</label>
-        <input id="cfg-gs-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/...">
-      </div>
-      <div class="config-item">
-        <label>Nombre del curso / materia</label>
-        <input id="cfg-course" type="text" placeholder="Ej. Cálculo I — Grupo A">
-      </div>
-    </div>
-    <div style="margin-top:20px">
-      <label>URL base de esta página (para los QR)</label>
-      <input id="cfg-base-url" type="url" placeholder="https://midominio.com/asistencia.html">
-    </div>
-    <p style="font-size:.8rem; color:var(--muted); margin-top:8px">
-      Si usas esta página localmente, el QR ya usa la URL correcta automáticamente.
-    </p>
-    <div style="margin-top:24px">
-      <button class="btn btn-primary" onclick="saveConfig()">Guardar configuración</button>
-    </div>
+    <div class="field"><label>URL Google Sheet</label><input id="cfg-gs-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/..."></div>
+    <div class="field"><label>Webhook Apps Script</label><input id="cfg-webhook" type="url" placeholder="https://script.google.com/macros/s/..."></div>
+    <div class="field"><label>Hora límite (Presente vs Tarde)</label><input id="cfg-cutoff" type="time" value="09:10"></div>
+    <button class="btn btn-primary" onclick="saveConfig()">Guardar</button>
+    <span id="cfg-status" style="margin-left:12px;font-size:.82rem"></span>
   </div>
-
   <div class="card">
-    <h3 style="margin-bottom:16px; font-family:'DM Serif Display',serif">📋 Instrucciones: Conectar Google Sheets</h3>
-    <ol style="color:var(--muted); font-size:.88rem; line-height:2; padding-left:20px">
-      <li>Crea una hoja de cálculo en <a href="https://sheets.google.com" target="_blank" style="color:var(--accent)">Google Sheets</a>.</li>
-      <li>Agrega los encabezados: <code style="background:var(--surface2); padding:1px 6px; border-radius:4px">Nombre | Matrícula | Fecha | Hora | Estado</code></li>
-      <li>Ve a <strong>Extensiones → Apps Script</strong> y pega el siguiente código:</li>
-    </ol>
-    <pre style="background:var(--surface2); border-radius:8px; padding:16px; margin-top:12px; overflow-x:auto; font-family:'DM Mono',monospace; font-size:.78rem; color:#a5b4fc; line-height:1.6">
-function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    <h3 style="font-family:'DM Serif Display',serif;margin-bottom:12px">Apps Script para Google Sheets</h3>
+    <pre style="background:var(--surface2);border-radius:8px;padding:14px;overflow-x:auto;font-family:'DM Mono',monospace;font-size:.72rem;color:#a5b4fc;line-height:1.6">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet()
+              .getSheetByName("Asistencia") || 
+              SpreadsheetApp.getActiveSpreadsheet()
+              .getActiveSheet();
   var data  = JSON.parse(e.postData.contents);
-  sheet.appendRow([data.nombre, data.matricula, data.fecha, data.hora, data.estado]);
+  var last  = sheet.getLastRow() + 1;
+  sheet.getRange(last,1,1,6).setValues([
+    [last-1, data.nombre, data.matricula,
+     data.fecha, data.hora, data.estado]
+  ]);
   return ContentService
-    .createTextOutput(JSON.stringify({ok: true}))
+    .createTextOutput(JSON.stringify({ok:true}))
     .setMimeType(ContentService.MimeType.JSON);
-}
-    </pre>
-    <ol start="4" style="color:var(--muted); font-size:.88rem; line-height:2; padding-left:20px; margin-top:12px">
-      <li>Despliega como <strong>Aplicación web</strong> (acceso: <em>Cualquiera</em>).</li>
-      <li>Copia la URL del deployment y pégala abajo como <strong>Webhook URL</strong>:</li>
-    </ol>
-    <div style="margin-top:12px">
-      <label style="font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em">Webhook URL (Apps Script)</label>
-      <input id="cfg-webhook" type="url" placeholder="https://script.google.com/macros/s/..." style="margin-top:6px; width:100%">
-    </div>
-    <div style="margin-top:16px">
-      <button class="btn btn-ghost btn-sm" onclick="testWebhook()">Probar conexión</button>
-      <span id="webhook-status" style="margin-left:12px; font-size:.82rem"></span>
-    </div>
+}</pre>
   </div>
 </div>
 
-<!-- ════════════════════════ QR MODAL ════════════════════════ -->
+<!-- ══ QR MODAL ══ -->
 <div class="modal-overlay" id="qr-modal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <h3 id="qr-modal-name">—</h3>
-    <p id="qr-modal-id">Matrícula: —</p>
+    <p id="qr-modal-id"></p>
     <div id="qr-container"></div>
-    <div class="instructions">
-      <strong>Para el alumno:</strong><br>
-      Escanea con la cámara de tu celular. Te llevará directo al formulario de asistencia con tu código prellenado.
-    </div>
-    <div style="margin-top:16px; display:flex; gap:8px; justify-content:center">
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:14px">Escaneá con la cámara de tu celular</p>
+    <div style="display:flex;gap:8px;justify-content:center">
       <button class="btn btn-ghost btn-sm" onclick="printQR()">🖨 Imprimir</button>
-      <button class="btn btn-primary btn-sm" onclick="downloadQR()">⬇ Descargar PNG</button>
+      <button class="btn btn-primary btn-sm" onclick="downloadQR()">⬇ Descargar</button>
     </div>
   </div>
 </div>
 
-<script>
-// ── STATE ──────────────────────────────────────────────────
-let students   = JSON.parse(localStorage.getItem('aqr_students')   || '[]');
-let attendance = JSON.parse(localStorage.getItem('aqr_attendance') || '[]');
-let config     = JSON.parse(localStorage.getItem('aqr_config')     || '{}');
-let currentQRStudent = null;
+<!-- ══ CONFIRM SCREEN (anti-fraude) ══ -->
+<div class="confirm-screen" id="confirm-screen">
+  <!-- Paso 1: Confirmar -->
+  <div id="confirm-step1" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:360px">
+    <div class="confirm-avatar" id="confirm-avatar">?</div>
+    <div class="confirm-name" id="confirm-name">—</div>
+    <div class="confirm-dni" id="confirm-dni">DNI —</div>
+    <div class="confirm-date" id="confirm-date">—</div>
+    <button class="btn-presente" onclick="registerAttendance()">✅ Marcar PRESENTE</button>
+    <button class="btn-cancelar" onclick="closeConfirm()">✕ No soy yo</button>
+  </div>
+  <!-- Paso 2: Éxito -->
+  <div class="confirm-success" id="confirm-step2">
+    <div class="success-icon">🎉</div>
+    <div class="success-msg" id="success-msg">¡Asistencia registrada!</div>
+    <div class="success-sub" id="success-sub"></div>
+    <button class="btn btn-ghost" style="margin-top:28px" onclick="closeConfirm()">Cerrar</button>
+  </div>
+</div>
 
-// ── TABS ───────────────────────────────────────────────────
-function switchTab(tab) {
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const PRELOADED = [{"name": "ACOSTA CUSSIGH, ENZO FABRICIO", "id": "46607967", "uid": "544e7727-c20c-42a6-9bc9-3d3b5c155e4a"}, {"name": "Acosta, Lourdes Cecilia", "id": "46857724", "uid": "3caf1901-7c59-4c7a-a5e4-317feb042ea5"}, {"name": "ACUÑA, BRUNO MATIAS ISMAEL", "id": "46075329", "uid": "0c50567e-ca30-4695-a04e-aea9218f4546"}, {"name": "AGUILAR PÉREZ, Mateo", "id": "46462510", "uid": "31aa16ca-5c33-4f16-8ef6-739e0135e987"}, {"name": "Aguilar, Ramón Jesús", "id": "47536776", "uid": "64b9e6b8-897d-4c06-9fc7-62d876069fee"}, {"name": "ALBORNOZ, TATIANA DIAMELA EMILCE", "id": "46715385", "uid": "3c47c557-67d8-41ea-bc4a-5db247a4f68b"}, {"name": "Alvarez Maidana, Nahuel", "id": "47785293", "uid": "e68b84b2-6347-404d-ae60-74786e4c8a86"}, {"name": "ANRIQUEZ, Ezequiel", "id": "37070737", "uid": "08063b23-7e02-4fa3-b2ac-c458da8ff0a5"}, {"name": "Aquino, Keren Lucila", "id": "45760663", "uid": "4315941f-123a-465f-aa74-763c0db0427e"}, {"name": "AVALOS, Joaquín", "id": "47857934", "uid": "d3d83bf8-9138-4e2c-ad88-28e7cb68cde5"}, {"name": "AYALA, Melina", "id": "47524091", "uid": "d201d42b-1090-44fb-928c-bb9155536e5f"}, {"name": "Barrientos, Carla Agostina", "id": "47895144", "uid": "d2791204-f352-4b3e-923d-24d73f06232d"}, {"name": "BENITEZ ARREGIN, Brenda", "id": "46912779", "uid": "fdfc04ef-8e3a-4ecd-9e00-4e870f2cac80"}, {"name": "BENITEZ MAMBRIN, ALEJANDRA MAGALI", "id": "46718177", "uid": "da93e08d-1450-41be-b447-4755ffec3bf2"}, {"name": "BENITEZ SABOTIGH, Ana", "id": "47615848", "uid": "a03fc954-9c0c-47dd-9bf4-65e93320e47b"}, {"name": "BERGNA, JULIETA CONSTANZA", "id": "47041468", "uid": "c3218155-70b2-4581-a214-ff2937926f45"}, {"name": "BERNAL PEREZ, LUCIANO EZEQUIEL", "id": "44470708", "uid": "d4ce5339-3dd5-45aa-936b-aff95e2798a1"}, {"name": "BLANCO, JULIETA DE LOS ANGELES", "id": "45374403", "uid": "d352dc2e-8d1a-477f-9e83-65620bb730e5"}, {"name": "Bogado Ramirez, Nicole Ángeles Yael", "id": "46149306", "uid": "ce1d82c1-9c3a-4196-a33d-df49e1d9c7fc"}, {"name": "Bogarin, Sofia Giuliana", "id": "48081628", "uid": "f8728771-b8c1-4db1-b67a-54e5ed46e54b"}, {"name": "Bravo, Brenda Celeste", "id": "47235874", "uid": "390ca524-438a-4c03-ac65-bf2c26f0ca7f"}, {"name": "Brignardello, Antonella", "id": "47857034", "uid": "d2cd8f63-7493-4b1e-ae42-b18612a0d051"}, {"name": "BRITEZ, ESTEFANIS YASMIN", "id": "46924220", "uid": "3a20a2e2-3cfe-4504-8e30-c56775d3dcc9"}, {"name": "Bustamante, Abril", "id": "47615549", "uid": "201ebb2a-a740-452a-b9b1-7871a3e31893"}, {"name": "BUTARELLI, CAMILA AILEN", "id": "45370920", "uid": "9007b349-4bb3-4c26-b8b7-f722049be70b"}, {"name": "CABAÑA, LUNA", "id": "47856979", "uid": "0c988209-cb55-4c37-828c-e24d6b84b40b"}, {"name": "Cabral, Sheila Loana", "id": "47620101", "uid": "3d2831c5-0808-4f49-b5f5-454ce638afd9"}, {"name": "Caceres, Denisse Ailén", "id": "47538093", "uid": "165df6a0-7ff9-46db-ae1b-2540056fdeef"}, {"name": "Caitano Bastiani, Maximiliano Augusto", "id": "47932934", "uid": "9a024599-fd9d-4c58-a0ae-5590ca05f7d5"}, {"name": "CANTEROS, JIMENA", "id": "47224614", "uid": "d7f3037e-a2bc-456a-bc32-d3be103264fc"}, {"name": "Caravaca, Kiara", "id": "47228365", "uid": "5485b4a9-d672-4aa9-8cb9-ef07e65c6148"}, {"name": "CARBONEL PADILLA, MARIA ALEJANDRA", "id": "95439542", "uid": "637b7f28-aa14-4bdc-939e-48471a391627"}, {"name": "Chavez, Valentina Micaela", "id": "47932627", "uid": "c6bd32e8-d7fa-4dd0-8729-f8b1f97048b3"}, {"name": "Cohene, Enzo Luciano", "id": "46781581", "uid": "2df789ce-d123-45dd-96fd-90b2bfeafc54"}, {"name": "COUTINHO, CAMILA", "id": "47991839", "uid": "87d77c5c-0425-4e08-9d76-3f310976d815"}, {"name": "COUTINHO TUOTI, TRINIDAD INES", "id": "42098750", "uid": "f67ebdda-dadd-4443-8156-9403fed9d7ad"}, {"name": "Cuenca, Milena Abigail", "id": "47720117", "uid": "f8356b8b-fec3-40b5-98da-5f9cd9e52f23"}, {"name": "DAVALOS ESQUIVEL, MARTINA", "id": "43109669", "uid": "2fe615af-1613-4f7d-816e-9e0d698e4e23"}, {"name": "De Bortoli, Renata", "id": "47856750", "uid": "97ec909e-4932-450f-b38e-b6505c61aa8d"}, {"name": "Dino, Julia Anabella", "id": "46855968", "uid": "5979faaa-a4d4-4a0e-8a8e-0256e36a9b2a"}, {"name": "Domínguez Bogado, Rocío Soledad", "id": "47226071", "uid": "eab12358-a40c-481d-bc41-b9b941e275b4"}, {"name": "Eidman, Yael Naiara", "id": "44470134", "uid": "5de14830-a803-45b5-bc89-888d88fdcfe0"}, {"name": "Enriquez, Tiago", "id": "47366345", "uid": "4f84d723-9688-4601-a5d9-ccd75d790558"}, {"name": "Escobar, Milagros", "id": "47524549", "uid": "a9f98ad5-9435-447f-98b4-7fd784cc84d0"}, {"name": "ESCURRA, CHIARA GUILLERMINA", "id": "47895196", "uid": "5440c60d-a774-4c36-a4c5-0156c846696c"}, {"name": "Español, Sofia", "id": "47893570", "uid": "fb3777ac-31e7-4b25-acf3-4dbf0ac877c5"}, {"name": "Espindola, Amanda Indira", "id": "47368121", "uid": "c21f818b-ba34-462d-b3c9-9cc4e57a9bb7"}, {"name": "ESPINOZA, LEO", "id": "42061735", "uid": "91edf807-c669-4d17-8b95-b03cd3638d89"}, {"name": "Fariña, Valentina", "id": "46715584", "uid": "563e506e-8820-4559-b890-8f9843523693"}, {"name": "FERNANDEZ, ANTONELLA MILAGROS", "id": "46514153", "uid": "bbc69c9b-c26b-4983-808e-46978f727256"}, {"name": "Fernandez, Enzo Guillermo", "id": "40180262", "uid": "9c646ace-cf9f-476d-8c4d-db64d61550f6"}, {"name": "FERNANDEZ GABE, CAMILA BELÉN", "id": "44826283", "uid": "8ef36a36-4b0b-4f54-ac51-29b73bfe6e43"}, {"name": "Fernández, Lara Agostina", "id": "47895427", "uid": "abe610f8-e63a-42d4-b6bb-ac6db6908977"}, {"name": "Fernández, Luciana Agustina", "id": "47524073", "uid": "c155347e-9a08-42f8-be8a-40fe66c474b1"}, {"name": "FERNANDEZ, SILVIA CLARA LUZ", "id": "45648645", "uid": "28b3a85e-9c43-4f74-8ae3-cad7ef4bc57f"}, {"name": "FERNANDEZ, WANDA EIMI", "id": "46315675", "uid": "bd9eb52d-2ae7-480f-b7e3-c53e382a1e6f"}, {"name": "Ferrero, Valentina Marianela Sol", "id": "47785313", "uid": "8ac00525-efa9-4cfc-8144-c3789663740a"}, {"name": "Florentin, Celeste Gisel", "id": "46776992", "uid": "e6f7c602-b098-4339-bfa5-4c578d375c4b"}, {"name": "FRANCO, LUCIANA MICAELA", "id": "44718564", "uid": "6cbfceaf-e8b0-47a1-850d-8f8b84c5ab2e"}, {"name": "FRIAS, FLORENCIA ANAHÍ", "id": "46075345", "uid": "84a6d17c-5dfe-439c-a8c5-bd029904deff"}, {"name": "Galarza Gonzalez, Milagros Anabela", "id": "38714448", "uid": "399647bd-3d84-4f5a-a819-601e0373b1f5"}, {"name": "Gallardo, Nicole Kiara Azul", "id": "47933717", "uid": "2f11c78e-5d12-4545-afc3-831ed1b0ea9c"}, {"name": "Gamarra, Carla Cristina", "id": "46808816", "uid": "f9b30826-e856-4a8e-b811-215e1477ad82"}, {"name": "GARCÍA, MARCOS ANTONIO LEONEL", "id": "41974504", "uid": "4e9f2e65-61de-4d6c-8a28-5a3660af5463"}, {"name": "Garcia, Martina Nair", "id": "47324477", "uid": "1759623f-5e3a-4d7b-b5ef-87ab9f495f88"}, {"name": "Gauna Hernandez, Lucia Magali", "id": "47895470", "uid": "07a9f3f7-7b02-410c-a98f-33c6f019fd34"}, {"name": "GIMENEZ, DIAMELA ADRIADNA", "id": "46673699", "uid": "29555a42-8f36-46f2-a18e-f8a90d131434"}, {"name": "Gimenez, Valentin", "id": "46857917", "uid": "e45a7542-4f40-4600-97b7-8703a54cb8f9"}, {"name": "GOMEZ, ANGEL NATANAEL", "id": "47785837", "uid": "4be10dc3-bce3-4126-a889-4a062125b1df"}, {"name": "GOMEZ AYALA, LEANDRO EZEQUIEL", "id": "44089494", "uid": "00d8c9ca-11e2-4f07-9809-d1f0cd89df5b"}, {"name": "Gomez Ayala, Nahuel Marcelo", "id": "47537522", "uid": "624e9c2d-008c-411c-a9f7-cac66a0f21fd"}, {"name": "Gomez, Karen Noemi", "id": "44467986", "uid": "fe94ef8d-a282-4d9b-b4e9-94c2fe9863eb"}, {"name": "Gomez Lorefici, Nahiara Belén", "id": "44388500", "uid": "2b7a1cf6-1aa7-4117-9043-8b180e2fa14b"}, {"name": "Gomez, Lourdes Ludmila", "id": "47719999", "uid": "957488b9-00e8-4874-959f-29ba59f80292"}, {"name": "Gomez Luna, Lara Milagros", "id": "47228358", "uid": "7a5a5d1d-e282-4749-aefc-ccf686e57105"}, {"name": "GOMEZ, SANTIAGO IGNACIO", "id": "46716853", "uid": "cd455e5b-694d-4a47-b091-480a735cbb69"}, {"name": "Gomez Sibert, Masculino", "id": "45794300", "uid": "76035d49-ef1e-4ec6-83cf-b88a4f878520"}, {"name": "GONZALEZ, CAMILA CELENA", "id": "45100367", "uid": "9463acd6-51da-4d44-be9b-0d21573876f8"}, {"name": "GONZALEZ, CANDELA ZAIRA DANIELA", "id": "46384581", "uid": "a4babbe9-672b-43b2-95d9-c880e50a197b"}, {"name": "GONZALEZ, Lixus", "id": "44408495", "uid": "1f5269fe-27cc-4432-a643-4e661fb7304c"}, {"name": "Gonzalez, Nicole Abigail", "id": "47524254", "uid": "cccc4311-c742-441c-9e14-7af7b1e7abc8"}, {"name": "GONZÁLEZ, ROCIO AILEN", "id": "44944870", "uid": "cb47b9b9-664c-4077-9198-5f8c90540493"}, {"name": "Gonzalez, Ximena Micaela", "id": "46602266", "uid": "635bc6e3-eca3-4d8b-a464-e1fd07125da4"}, {"name": "GUERRERO, ANTONELA ASTRID", "id": "45558988", "uid": "778f0d99-286f-44eb-949c-c9fecff477b8"}, {"name": "Heñin, María Delfina", "id": "47856832", "uid": "13985b94-6c6f-42ee-82e1-8c9c181b35b9"}, {"name": "Hernandez, Candela", "id": "47423465", "uid": "605d9a95-cc44-4043-a288-051820302e10"}, {"name": "Hidalgo, Darío Alexander", "id": "46518834", "uid": "53933fc0-9f13-4963-92b6-8e8849d066ae"}, {"name": "Hüwel, Martina", "id": "47932916", "uid": "ef93e5fd-b155-4de1-80c3-3400de0b377a"}, {"name": "Illa Sotelo, Gonzalo Lionel", "id": "47427388", "uid": "fb520743-4ed7-4d93-b608-d982d439420b"}, {"name": "Insaurralde, Abril Milagros", "id": "47423474", "uid": "c5a5c4c5-e251-4091-b4ec-a666d8002b38"}, {"name": "KISZCKA, Valentina", "id": "47323771", "uid": "e54171b8-87cd-4844-b93d-0c0c2433fc23"}, {"name": "LEDESMA, MARINA EDITH", "id": "40912074", "uid": "7fee8c9b-ba6c-4d7b-bb18-502b5d147d25"}, {"name": "Lezcano Baldovino, Rocio", "id": "47932962", "uid": "2cf70b7e-27b1-43fe-b0c0-b360a6fb7633"}, {"name": "Llopiz Morante, Agustina", "id": "44468707", "uid": "65dc952b-a3d3-425c-b8fb-0b4dac0fad67"}, {"name": "López Burgos, Melani Mailén", "id": "47042539", "uid": "731edb12-a661-43b5-a66d-4657bec02670"}, {"name": "LÓPEZ, Jazmín", "id": "46855845", "uid": "74461c05-cb5e-4330-a325-0cb8ad501716"}, {"name": "LÓPEZ, LAUTARO DANIEL", "id": "47223880", "uid": "bf972c1d-f265-46ec-8676-073d9c954b35"}, {"name": "Lopez Origgi, ximena", "id": "46844241", "uid": "d04cb151-53fd-4d83-aed5-a31daa370e1c"}, {"name": "Lugo Caceres, Sofia", "id": "46921759", "uid": "cc40bb68-e21a-4522-9773-1b3c786a4ddc"}, {"name": "Luque, Madelen Lucero", "id": "48730408", "uid": "b47b62ab-5691-42de-8f78-7bdd29c6efda"}, {"name": "Machuca, Agostina Maria Sol", "id": "47615456", "uid": "fd65d252-2894-4122-992e-0a449a9f55ce"}, {"name": "MACHUCA, ARIADNA ANDREA ELIZABETH", "id": "44976807", "uid": "b6639bc3-5417-4008-ab58-e27d17b09023"}, {"name": "MACIEL ROMERO, GUSTAVO ALEJANDRO", "id": "44198636", "uid": "40b55843-a118-40e8-910c-c62b2d813b2e"}, {"name": "MADONA, Mauro", "id": "45794570", "uid": "c73289d7-a9b5-4729-987c-ffe4ffd136b8"}, {"name": "MAIDANA, CONSTANZA NOEMÍ", "id": "45097363", "uid": "54f00709-add0-4bf5-96b6-d2bf5a7605f3"}, {"name": "MAIDANA, FÁTIMA", "id": "44331669", "uid": "68c52551-0b7c-4007-9580-84239ac2b7e4"}, {"name": "MAIDANA ROMERO, FLORENCIA AGUSTINA", "id": "43275410", "uid": "1497a66f-519a-4937-8652-0d17b48e4d4d"}, {"name": "Maidana, Sofia Eliane", "id": "47421316", "uid": "72fa8487-8cf2-48cb-8098-fa5163c2cb86"}, {"name": "MAIORANA, MILENA", "id": "43535589", "uid": "07ce5a15-726e-4023-b79a-a846cc0f9b7b"}, {"name": "MARISCAL, GLORIA ALEJANDRA", "id": "43299962", "uid": "e511541b-a91e-452f-8b0a-90e18473f32d"}, {"name": "Marucci Vera, Fabricio Joel", "id": "48080163", "uid": "4ec597d3-81f2-47a9-8fbb-a1948d01644d"}, {"name": "MAUREL, SOL SABRINA ARIELA", "id": "43885133", "uid": "e62f92f2-6f43-4fee-b3c3-eef0f338a1b9"}, {"name": "Medina Lugo, Nariana Shaiel", "id": "48081956", "uid": "835da384-a9ce-40af-8555-8154f0181f1d"}, {"name": "MERLO, ALDANA ARACELI", "id": "47857005", "uid": "b118e88b-3690-40f6-a345-82dc4d425a04"}, {"name": "Mierez, Milena Sofía", "id": "47932908", "uid": "4a5a8903-dc2c-4399-8a7c-9872d39e47ce"}, {"name": "MIÑO DIAZ, Miño Dia Damaris", "id": "43747699", "uid": "74d3fbbb-ec45-4d1b-a27d-2a3d4f3e5e91"}, {"name": "Montenegro, Adriel Martin", "id": "46988728", "uid": "0d50b1c8-d0db-4844-bb21-63ee9b5ad08e"}, {"name": "Monzon, Daiana Aylen", "id": "47856968", "uid": "a91e8423-f09d-45fb-a12c-4641d4488c8a"}, {"name": "MONZÓN RUIZ DIAZ, ROCÍO AILÉN", "id": "46512698", "uid": "32eee2d5-fbc8-433a-87f6-f5d241f005a3"}, {"name": "MORA, MALAQUIAS MATIAS GABRIEL", "id": "45944369", "uid": "22abcde0-efa9-4b3e-900a-e14178bbda80"}, {"name": "Moreira Cabral, Lujan Ainara", "id": "47894709", "uid": "200760d3-e157-465a-bfc8-e3f857440423"}, {"name": "Nacimento, Juan Francisco", "id": "48130541", "uid": "cea9cdf5-e2ba-4df2-b260-f8b5d48d845c"}, {"name": "NUÑEZ, LARA DANIELA", "id": "45250276", "uid": "86defb58-d481-49ef-b028-df3cd43a1615"}, {"name": "Nuñez, Tomás", "id": "47368477", "uid": "dbfe2794-4042-40ea-a57b-a0b07ea89a03"}, {"name": "OJEDA, LAUTARO EZEQUIEL", "id": "44470140", "uid": "b1de4f4c-f25c-424c-8437-93f2296248e0"}, {"name": "OLIVARES, DANIELA MELINA", "id": "46075414", "uid": "1a60f7b0-c453-4955-9ba4-f6638a232ca4"}, {"name": "OLMEDO, JOSÉ MARTÍ", "id": "47995383", "uid": "5d11ddca-2c26-4b0c-af45-722f8a242d1c"}, {"name": "ORTMANN, DAMARIS DANIELA", "id": "41903927", "uid": "b5413b63-1f82-43a2-92e2-e1c66307d153"}, {"name": "OVIEDO MARTINEZ, LURDES ANALUZ", "id": "46963469", "uid": "c95cebe5-9c73-49ff-85c9-191777379468"}, {"name": "PANIAGUA GALEANO, KAMILO EZEQUIEL", "id": "45643322", "uid": "91f80603-16f6-4c97-ae7a-860c51f1750f"}, {"name": "PELOSO, NATALIA SOLEDAD", "id": "26432848", "uid": "f02d1c5b-c2ee-4d07-8c4d-945e09cff0ff"}, {"name": "Peralta, Joan", "id": "47368472", "uid": "ec1504b2-a502-4028-bc27-c241a40dd20d"}, {"name": "Perez, Ludmila Dahiana Belen", "id": "47537122", "uid": "a021a84c-efe4-497b-9f1d-fba80bdeced1"}, {"name": "PÉREZ, MALENA", "id": "44826003", "uid": "d31c4993-7fa7-448b-8bc1-e51acc0aba97"}, {"name": "Pineda, Valentina, Celeste", "id": "47324224", "uid": "aaeb5f5d-72e8-4c0a-be6e-f83a5399a213"}, {"name": "POLICH BORDA, NAHUEL AGUSTÍN", "id": "45044456", "uid": "5cd7bb24-7476-4d70-a881-314668e7afa7"}, {"name": "Ponce, Eduardo Daniel", "id": "47227442", "uid": "8f8feb38-8a8e-43d4-a3d8-21d89ff4b4e2"}, {"name": "Portillo, Javier", "id": "47422366", "uid": "f25336e3-a677-4ce3-968b-858ad8c70df7"}, {"name": "Prieto Fernandez, Enzo Gabriel", "id": "44826508", "uid": "62b66d96-d7c3-4436-a57d-55e95f71d397"}, {"name": "QUINTANA, DAIANA AYELÉN", "id": "46818725", "uid": "2bab55e8-f3f6-4d0d-bd57-be41fbd97266"}, {"name": "Quirico, Mauricio Martin", "id": "46773078", "uid": "979410fb-2bd3-4cf4-8f63-f6f062617623"}, {"name": "QUIROZ, NERINA ABIGAIL", "id": "46840708", "uid": "097426cb-5f77-4ebd-93ac-913554ea5bee"}, {"name": "Rafart Allende, Rosario", "id": "46463247", "uid": "a6c4c47d-1817-40e8-83f9-34ef3aa33135"}, {"name": "REPETTO ANDRIANI, GIULIANA", "id": "44000175", "uid": "6252e458-de27-43c5-9eea-1778df05899a"}, {"name": "RETAMOZA, SELENA", "id": "43932649", "uid": "53cb11c4-0620-4062-9c90-52882a7d076b"}, {"name": "Rodriguez, María Eugenia", "id": "46074482", "uid": "9864b12b-248f-464f-aed6-be31b62ede9e"}, {"name": "RODRIGUEZ, MILAGROS VALENTINA", "id": "47539020", "uid": "72fea2f7-cb3e-4304-8cee-561cd77a19dc"}, {"name": "Rodriguez, Pablo Matías", "id": "47004506", "uid": "479e16f4-75b4-4d71-8163-1c7aecee9602"}, {"name": "RODRIGUEZ PARDO, ABRIL AGUSTINA", "id": "45097977", "uid": "f7c22420-cb7d-49bd-b416-5caa2fd11a0c"}, {"name": "Rodriguez Salinas, Eliana Alejandra", "id": "47619911", "uid": "1a536a34-a38b-4acb-9ac2-ba18463b12bc"}, {"name": "Rolon Frias, Guada", "id": "47857932", "uid": "36bcfa15-939f-401d-ab61-e8cc730ef739"}, {"name": "ROMAGNOLI, LUCIA ABIGAIL", "id": "46924433", "uid": "bd76f9b3-1696-45c3-a17d-09d00cf46e0e"}, {"name": "ROMERO, DAIANA VICTORIA", "id": "46064581", "uid": "b31597ca-ab16-418e-a021-40780407c006"}, {"name": "ROMERO, Federico Nicolás", "id": "46313538", "uid": "81d61ad3-2b1b-41e0-a04f-184c6d22fa44"}, {"name": "Romero Hardy, Pilar", "id": "46462786", "uid": "bd5d4714-b369-4733-ac27-442a907232ff"}, {"name": "Romero, Victoria Maité", "id": "47619284", "uid": "da263df0-6363-497a-954f-4d234045649d"}, {"name": "RUIZ DIAZ, VALENTINA", "id": "48081955", "uid": "f78c97b4-15d7-411e-999a-8bcfed33ba3c"}, {"name": "Saavedra, Abril Naihara", "id": "46246025", "uid": "cd14dab3-c074-4b10-905d-10780cd84de6"}, {"name": "Saffadi, Ludmila Oriana", "id": "47421359", "uid": "35927442-9c0f-495e-90ce-7aa8463b1def"}, {"name": "SCALAMOGNA, AGOSTINA LUCIANA", "id": "47932768", "uid": "8144a593-b38c-4f17-ac10-88a1b05c5eae"}, {"name": "SILVA, MARIA PAULA", "id": "34941287", "uid": "8525ed3f-019f-4424-a9ba-708261daeb73"}, {"name": "SOBRADO, victoria", "id": "46383722", "uid": "d2debbf1-ed8b-4c6a-9bbe-59ac4143d0c7"}, {"name": "Solis, clelia", "id": "38967351", "uid": "d2f50b7d-a01f-4245-a2d2-e0a5455ae599"}, {"name": "Solis, Gimena Victoria Juana", "id": "46856411", "uid": "e3fd5955-488f-4c4a-9a4a-0f9f2230b6ce"}, {"name": "SOSA, Marcela", "id": "44976338", "uid": "010fab3f-b145-4cb3-a366-863852d54940"}, {"name": "SOTO, MICAELA ANAHÍ", "id": "44085929", "uid": "f472b570-f621-45e8-8241-13c5060e0a40"}, {"name": "TORRES, YULIANA CAMILA", "id": "45453131", "uid": "839f884c-702f-4b23-9dca-c69995a42cd4"}, {"name": "Torres, Camila Maria Lujan", "id": "45642571", "uid": "a72ecb43-db6f-4f6a-a84c-e78c01c1e47c"}, {"name": "TORRES, DAIRA PRISCILA", "id": "46775173", "uid": "7a18ce2f-ec40-4fb5-8fa5-cfe40b0a05de"}, {"name": "TORRES MOLINA, ELIAS EZEQUIEL", "id": "44089474", "uid": "75a22ead-3441-4769-8e5d-d9adfd8d6501"}, {"name": "TOURN, ORIANA ANGELINA", "id": "44944122", "uid": "fe5d29d0-e3fb-442b-9b4a-3832befcb46d"}, {"name": "Urne Ayala, Gonzalo Agustín", "id": "47993412", "uid": "9be7416e-2e4b-482e-a422-77cd3475370c"}, {"name": "Valdez, Lara Ximena", "id": "47785286", "uid": "d0476009-e620-43e7-966e-91a5b07ff70d"}, {"name": "Valdez, Miqueas", "id": "47618933", "uid": "d4ecab03-54e0-4007-8a37-b20e7caabe5e"}, {"name": "Valenzuela, Ludmila", "id": "47895604", "uid": "e0c1cacf-8498-46d2-b25c-991624922923"}, {"name": "VALLEJOS PEREYRA, SOFIA NAZARET", "id": "44196082", "uid": "0d8a2866-bb8e-4eb0-a973-37f9429cc4fe"}, {"name": "Velez, Guillermina", "id": "47536815", "uid": "ba702b25-0b15-4c75-b68d-92374cbce8a4"}, {"name": "VERA MONZÓN, GASTON DANIEL", "id": "43438003", "uid": "c3c58e43-75e3-4ca3-b14c-8d795fe3873f"}, {"name": "Veron Paret, Delfina Juliana", "id": "47614461", "uid": "64cee3d9-f986-4d79-97c9-d1a59e67912b"}, {"name": "Veron, Tatiana Maria José", "id": "46963320", "uid": "8975cec6-2082-4764-aa70-b6ae68c2fb5d"}, {"name": "Verri, Julieta Yazmin", "id": "44221643", "uid": "2385ffba-e4c3-420f-81d5-28dbd1310887"}, {"name": "WEIGANDT, NEHEMIAS JOEL", "id": "47537808", "uid": "c97b9164-57f4-4bc4-b1fb-ef3deb8b4e0c"}, {"name": "WOJTUN, KEVIN TOMAS", "id": "46383787", "uid": "385bb1a9-5d50-4155-a2b5-3f6cf429d971"}, {"name": "Young Billasante, Bárbara", "id": "44976848", "uid": "5c322121-b2c2-4393-9838-07184ffe271c"}, {"name": "ZAMUDIO, LISSETH DESIREÉ", "id": "46316628", "uid": "2bd26d29-61c3-4e08-b6c2-890d4b8a0313"}, {"name": "Alderete, José Gabriel", "id": "29044986", "uid": "f0452de1-b5eb-4468-b766-73c009c9a5e9"}];
+
+let students   = JSON.parse(localStorage.getItem('aqr_students') || 'null');
+let attendance = JSON.parse(localStorage.getItem('aqr_attendance') || '[]');
+let config     = JSON.parse(localStorage.getItem('aqr_config') || '{}');
+let confirmStudent = null;
+let currentQRStudent = null;
+let camStream = null, camAnimFrame = null, camActive = false;
+
+// Preload if empty
+if (!students || students.length < 10) {
+  students = PRELOADED;
+  localStorage.setItem('aqr_students', JSON.stringify(students));
+}
+
+function saveStudents()   { localStorage.setItem('aqr_students',   JSON.stringify(students)); }
+function saveAttendance() { localStorage.setItem('aqr_attendance', JSON.stringify(attendance)); }
+
+// ── TABS ──────────────────────────────────────────────────
+function switchTab(tab, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + tab).classList.add('active');
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
   if (tab === 'asistencia') renderAttendance();
   if (tab === 'alumnos')    renderStudents();
   if (tab === 'config')     loadConfig();
-  if (tab === 'escanear')   checkURLCode();
+  if (tab === 'escanear')   checkURLHash();
 }
 
-// ── STUDENTS ───────────────────────────────────────────────
-function saveStudents() { localStorage.setItem('aqr_students', JSON.stringify(students)); }
-
+// ── STUDENTS ──────────────────────────────────────────────
 function addStudent() {
   const name = document.getElementById('inp-name').value.trim();
   const id   = document.getElementById('inp-id').value.trim();
-  if (!name) return alert('Ingresa el nombre del alumno.');
-  const code = id || ('A' + Date.now().toString(36).toUpperCase());
-  students.push({ name, id: code, uid: crypto.randomUUID() });
+  if (!name || !id) return alert('Completá nombre y DNI.');
+  if (students.find(s => s.id === id)) return alert('Ese DNI ya existe.');
+  students.push({ name, id, uid: crypto.randomUUID() });
   saveStudents();
   document.getElementById('inp-name').value = '';
   document.getElementById('inp-id').value   = '';
@@ -636,44 +343,43 @@ function addStudent() {
 }
 
 function deleteStudent(uid) {
-  if (!confirm('¿Eliminar este alumno?')) return;
+  if (!confirm('¿Eliminar alumno?')) return;
   students = students.filter(s => s.uid !== uid);
-  saveStudents();
-  renderStudents();
+  saveStudents(); renderStudents();
 }
 
 function renderStudents() {
   const list = document.getElementById('student-list');
   const emp  = document.getElementById('empty-students');
+  document.getElementById('count-students').textContent = students.length;
   list.innerHTML = '';
-  if (!students.length) { emp.style.display = 'block'; return; }
+  if (!students.length) { emp.style.display='block'; return; }
   emp.style.display = 'none';
   students.forEach(s => {
-    const div = document.createElement('div');
-    div.className = 'student-card';
-    div.innerHTML = `
+    const d = document.createElement('div');
+    d.className = 'student-card';
+    d.innerHTML = `
       <button class="del-btn" onclick="deleteStudent('${s.uid}')">✕</button>
       <div class="avatar">${s.name.charAt(0)}</div>
       <div class="s-name">${s.name}</div>
       <div class="s-id">${s.id}</div>
-      <div class="card-actions">
-        <button class="btn btn-ghost btn-sm" onclick="showQR('${s.uid}')">🔲 Ver QR</button>
-      </div>`;
-    list.appendChild(div);
+      <button class="btn btn-ghost btn-sm" onclick="showQR('${s.uid}')">🔲 Ver QR</button>`;
+    list.appendChild(d);
   });
 }
 
-// ── QR MODAL ───────────────────────────────────────────────
+// ── QR MODAL ──────────────────────────────────────────────
 function showQR(uid) {
   const s = students.find(x => x.uid === uid);
   if (!s) return;
   currentQRStudent = s;
   document.getElementById('qr-modal-name').textContent = s.name;
-  document.getElementById('qr-modal-id').textContent   = 'Matrícula: ' + s.id;
+  document.getElementById('qr-modal-id').textContent   = 'DNI: ' + s.id;
   const container = document.getElementById('qr-container');
   container.innerHTML = '';
-  const base = config.baseUrl || window.location.href.split('?')[0];
-  const url  = `${base}?code=${encodeURIComponent(s.id)}&tab=escanear`;
+  // URL with hash — short and scannable
+  const base = config.baseUrl || window.location.origin + window.location.pathname;
+  const url  = base + '#' + s.id;
   new QRCode(container, { text: url, width: 200, height: 200, colorDark: '#0a0a0f', colorLight: '#ffffff' });
   document.getElementById('qr-modal').classList.add('open');
 }
@@ -685,108 +391,103 @@ function downloadQR() {
   if (!canvas) return;
   const a = document.createElement('a');
   a.download = `QR_${currentQRStudent.name.replace(/\s+/g,'_')}.png`;
-  a.href = canvas.toDataURL();
-  a.click();
+  a.href = canvas.toDataURL(); a.click();
 }
 
 function printQR() {
   const canvas = document.querySelector('#qr-container canvas');
   if (!canvas) return;
-  const img = canvas.toDataURL();
   const w = window.open('');
   w.document.write(`<html><body style="text-align:center;font-family:sans-serif">
-    <h2>${currentQRStudent.name}</h2>
-    <p>Matrícula: ${currentQRStudent.id}</p>
-    <img src="${img}" style="width:260px">
-    <p style="color:#888;font-size:.85rem">Escanea para registrar asistencia</p>
-    <script>window.onload=()=>window.print()<\/script>
-  </body></html>`);
+    <h2>${currentQRStudent.name}</h2><p>DNI: ${currentQRStudent.id}</p>
+    <img src="${canvas.toDataURL()}" style="width:240px">
+    <p style="color:#888;font-size:.85rem">Escaneá para registrar asistencia</p>
+    <script>window.onload=()=>window.print()<\/script></body></html>`);
 }
 
-// ── ATTENDANCE ─────────────────────────────────────────────
-function saveAttendance() { localStorage.setItem('aqr_attendance', JSON.stringify(attendance)); }
+// ── CONFIRM SCREEN (anti-fraude) ──────────────────────────
+function showConfirm() {
+  const code = document.getElementById('scan-input').value.trim();
+  if (!code) return;
+  const student = students.find(s => s.id.toUpperCase() === code.toUpperCase());
+  if (!student) {
+    alert('❌ DNI no encontrado. Verificá tu código.');
+    return;
+  }
+  confirmStudent = student;
+  const now  = new Date();
+  const fecha = now.toLocaleDateString('es-AR', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const hora  = now.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+
+  document.getElementById('confirm-avatar').textContent = student.name.charAt(0).toUpperCase();
+  document.getElementById('confirm-name').textContent   = student.name;
+  document.getElementById('confirm-dni').textContent    = 'DNI ' + student.id;
+  document.getElementById('confirm-date').textContent   = fecha + ' — ' + hora + 'hs';
+  document.getElementById('confirm-step1').style.display = 'flex';
+  document.getElementById('confirm-step2').style.display = 'none';
+  document.getElementById('confirm-screen').classList.add('open');
+  stopCamera();
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-screen').classList.remove('open');
+  document.getElementById('scan-input').value = '';
+  confirmStudent = null;
+  // Clear hash
+  history.replaceState(null, '', window.location.pathname);
+}
 
 function registerAttendance() {
-  const code = document.getElementById('scan-input').value.trim().toUpperCase();
-  const result = document.getElementById('scan-result');
-  if (!code) { showResult('error', '⚠️ Ingresa tu código.'); return; }
+  if (!confirmStudent) return;
+  const s    = confirmStudent;
+  const now  = new Date();
+  const today = now.toLocaleDateString('es-AR');
+  const time  = now.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
 
-  const student = students.find(s => s.id.toUpperCase() === code);
-  if (!student) { showResult('error', '❌ Código no encontrado. Verifica tu QR.'); return; }
+  const alreadyToday = attendance.find(a => a.uid === s.uid && a.date === today);
+  if (alreadyToday) {
+    document.getElementById('confirm-step1').style.display = 'none';
+    document.getElementById('confirm-step2').style.display = 'flex';
+    document.getElementById('success-icon') && null;
+    document.getElementById('success-msg').textContent  = '⚠️ Ya registraste hoy';
+    document.getElementById('success-sub').textContent  = `Registrado a las ${alreadyToday.time}`;
+    return;
+  }
 
-  const now   = new Date();
-  const today = now.toLocaleDateString('es-MX');
-  const time  = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-
-  const alreadyToday = attendance.find(a => a.uid === student.uid && a.date === today);
-  if (alreadyToday) { showResult('dup', `⚠️ ${student.name}, ya registraste asistencia hoy (${alreadyToday.time}).`); return; }
-
-  const config = JSON.parse(localStorage.getItem('aqr_config') || '{}');
-  const cutoff = config.lateCutoff || '09:10';
+  const cutoff = (config.cutoff || '09:10');
   const status = time <= cutoff ? 'Presente' : 'Tarde';
 
-  const record = { uid: student.uid, name: student.name, id: student.id, date: today, time, status };
+  const record = { uid:s.uid, name:s.name, id:s.id, date:today, time, status };
   attendance.unshift(record);
   saveAttendance();
   sendToSheets(record);
-  showResult('ok', `✅ ¡Hola, ${student.name}! Asistencia registrada — ${status}`);
-  document.getElementById('scan-input').value = '';
+
+  document.getElementById('confirm-step1').style.display = 'none';
+  document.getElementById('confirm-step2').style.display = 'flex';
+  document.querySelector('.success-icon').textContent = status === 'Presente' ? '🎉' : '✅';
+  document.getElementById('success-msg').textContent  = `¡${status}, ${s.name.split(',')[0]}!`;
+  document.getElementById('success-sub').textContent  = `${today} — ${time}hs`;
 }
 
-function showResult(type, msg) {
-  const el = document.getElementById('scan-result');
-  el.className = 'result-box ' + (type === 'ok' ? 'result-ok' : type === 'dup' ? 'result-dup' : 'result-err');
-  el.textContent = msg;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 4000);
-}
-
-function onScanInput(v) {
-  // Auto-register if the value looks complete (e.g. from a QR scanner that sends Enter)
-}
-
-function checkURLCode() {
-  const params = new URLSearchParams(window.location.search);
-  const code   = params.get('code');
-  if (code) {
-    // Auto-switch to escanear tab
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('view-escanear').classList.add('active');
-    document.querySelectorAll('.tab-btn')[2].classList.add('active');
-    // Fill the code
-    document.getElementById('scan-input').value = code.toUpperCase();
-    // Auto-register after short delay so user sees what's happening
-    setTimeout(() => registerAttendance(), 800);
-  }
-}
-
-// ── RENDER ATTENDANCE ──────────────────────────────────────
+// ── ATTENDANCE TABLE ──────────────────────────────────────
 function renderAttendance(filtered) {
   const data  = filtered !== undefined ? filtered : attendance;
   const tbody = document.getElementById('att-body');
   const empty = document.getElementById('att-empty');
   tbody.innerHTML = '';
-
-  const today = new Date().toLocaleDateString('es-MX');
+  const today = new Date().toLocaleDateString('es-AR');
   document.getElementById('stat-today').textContent    = attendance.filter(a => a.date === today).length;
   document.getElementById('stat-total').textContent    = attendance.length;
   document.getElementById('stat-students').textContent = students.length;
-
   const gsUrl = config.gsUrl || '#';
   document.getElementById('gs-link').href = gsUrl;
-
-  if (!data.length) { empty.style.display = 'block'; return; }
+  if (!data.length) { empty.style.display='block'; return; }
   empty.style.display = 'none';
-
-  data.forEach((r, i) => {
+  data.forEach((r,i) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="color:var(--muted)">${i+1}</td>
-      <td>${r.name}</td>
-      <td><span style="font-family:'DM Mono',monospace;font-size:.8rem">${r.id}</span></td>
-      <td>${r.date}</td>
-      <td>${r.time}</td>
+    tr.innerHTML = `<td style="color:var(--muted)">${i+1}</td><td>${r.name}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:.78rem">${r.id}</td>
+      <td>${r.date}</td><td>${r.time}</td>
       <td><span class="badge ${r.status==='Presente'?'badge-present':'badge-late'}">${r.status}</span></td>`;
     tbody.appendChild(tr);
   });
@@ -796,109 +497,64 @@ function applyFilter() {
   const date = document.getElementById('filter-date').value;
   const name = document.getElementById('filter-name').value.toLowerCase();
   let f = attendance;
-  if (date) {
-    const d = new Date(date + 'T00:00:00').toLocaleDateString('es-MX');
-    f = f.filter(a => a.date === d);
-  }
+  if (date) { const d = new Date(date+'T00:00:00').toLocaleDateString('es-AR'); f = f.filter(a => a.date===d); }
   if (name) f = f.filter(a => a.name.toLowerCase().includes(name));
   renderAttendance(f);
 }
-
-function clearFilter() {
-  document.getElementById('filter-date').value = '';
-  document.getElementById('filter-name').value = '';
-  renderAttendance();
-}
-
-function clearAttendance() {
-  if (!confirm('¿Eliminar TODOS los registros de asistencia?')) return;
-  attendance = [];
-  saveAttendance();
-  renderAttendance();
-}
-
+function clearFilter() { document.getElementById('filter-date').value=''; document.getElementById('filter-name').value=''; renderAttendance(); }
+function clearAttendance() { if (!confirm('¿Borrar todos los registros?')) return; attendance=[]; saveAttendance(); renderAttendance(); }
 function exportCSV() {
-  const header = 'Nombre,Matrícula,Fecha,Hora,Estado\n';
-  const rows   = attendance.map(a => `${a.name},${a.id},${a.date},${a.time},${a.status}`).join('\n');
-  const blob   = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
-  const url    = URL.createObjectURL(blob);
-  const a      = document.createElement('a');
-  a.href = url; a.download = 'asistencia.csv'; a.click();
+  const h = 'Nombre,DNI,Fecha,Hora,Estado\n';
+  const r = attendance.map(a => `${a.name},${a.id},${a.date},${a.time},${a.status}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([h+r],{type:'text/csv'}));
+  a.download = 'asistencia.csv'; a.click();
 }
 
-// ── GOOGLE SHEETS WEBHOOK ──────────────────────────────────
+// ── GOOGLE SHEETS ─────────────────────────────────────────
 async function sendToSheets(record) {
   const cfg = JSON.parse(localStorage.getItem('aqr_config') || '{}');
   if (!cfg.webhook) return;
   try {
     await fetch(cfg.webhook, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nombre: record.name, matricula: record.id,
-        fecha: record.date, hora: record.time, estado: record.status
-      })
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nombre:record.name, matricula:record.id, fecha:record.date, hora:record.time, estado:record.status})
     });
-  } catch(e) { console.warn('Sheets webhook error:', e); }
+  } catch(e) { console.warn('Sheets error:', e); }
 }
 
-async function testWebhook() {
-  const url = document.getElementById('cfg-webhook').value.trim();
-  const st  = document.getElementById('webhook-status');
-  if (!url) { st.textContent = '⚠️ Ingresa la URL primero'; st.style.color = '#fbbf24'; return; }
-  st.textContent = '⏳ Probando...'; st.style.color = '#94a3b8';
-  try {
-    await fetch(url, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre:'TEST', matricula:'000', fecha:'hoy', hora:'00:00', estado:'Prueba' })
-    });
-    st.textContent = '✅ Conexión exitosa (revisa tu Sheet)'; st.style.color = '#6ee7b7';
-  } catch(e) {
-    st.textContent = '❌ Error de conexión'; st.style.color = '#f87171';
-  }
-}
-
-// ── CONFIG ─────────────────────────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────
 function saveConfig() {
   config = {
-    gsUrl:      document.getElementById('cfg-gs-url').value.trim(),
-    course:     document.getElementById('cfg-course').value.trim(),
-    baseUrl:    document.getElementById('cfg-base-url').value.trim(),
-    webhook:    document.getElementById('cfg-webhook').value.trim(),
-    lateCutoff: '09:10'
+    gsUrl:   document.getElementById('cfg-gs-url').value.trim(),
+    webhook: document.getElementById('cfg-webhook').value.trim(),
+    cutoff:  document.getElementById('cfg-cutoff').value || '09:10',
+    baseUrl: window.location.origin + window.location.pathname,
   };
   localStorage.setItem('aqr_config', JSON.stringify(config));
-  alert('✅ Configuración guardada.');
+  document.getElementById('cfg-status').textContent = '✅ Guardado';
+  setTimeout(() => document.getElementById('cfg-status').textContent='', 2000);
 }
-
 function loadConfig() {
   const c = JSON.parse(localStorage.getItem('aqr_config') || '{}');
   document.getElementById('cfg-gs-url').value  = c.gsUrl    || '';
-  document.getElementById('cfg-course').value  = c.course   || '';
-  document.getElementById('cfg-base-url').value= c.baseUrl  || '';
   document.getElementById('cfg-webhook').value = c.webhook  || '';
+  document.getElementById('cfg-cutoff').value  = c.cutoff   || '09:10';
 }
 
-// ── CAMERA SCANNER ────────────────────────────────────────
-let camStream = null;
-let camAnimFrame = null;
-let camActive = false;
-
+// ── CAMERA ───────────────────────────────────────────────
 async function startCamera() {
   const btn = document.getElementById('btn-open-cam');
   const stopBtn = document.getElementById('btn-stop-cam');
   const wrap = document.getElementById('cam-wrap');
   const status = document.getElementById('cam-status');
   const video = document.getElementById('cam-video');
-
   status.textContent = '⏳ Iniciando cámara...';
   btn.disabled = true;
-
   try {
     camStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 1280 } }
+      video: { facingMode: 'environment', width: {ideal:1280}, height: {ideal:1280} }
     });
     video.srcObject = camStream;
     await video.play();
@@ -909,9 +565,8 @@ async function startCamera() {
     camActive = true;
     scanFrame();
   } catch(e) {
-    status.textContent = '❌ No se pudo acceder a la cámara. Verificá los permisos.';
+    status.textContent = '❌ Sin acceso a cámara. Verificá los permisos.';
     btn.disabled = false;
-    console.error(e);
   }
 }
 
@@ -919,70 +574,65 @@ function stopCamera() {
   camActive = false;
   if (camAnimFrame) cancelAnimationFrame(camAnimFrame);
   if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-  document.getElementById('cam-wrap').style.display = 'none';
-  document.getElementById('btn-stop-cam').style.display = 'none';
-  document.getElementById('btn-open-cam').style.display = 'block';
-  document.getElementById('btn-open-cam').disabled = false;
-  document.getElementById('cam-status').textContent = '';
+  const wrap = document.getElementById('cam-wrap');
+  if (wrap) wrap.style.display = 'none';
+  const stopBtn = document.getElementById('btn-stop-cam');
+  if (stopBtn) stopBtn.style.display = 'none';
+  const openBtn = document.getElementById('btn-open-cam');
+  if (openBtn) { openBtn.style.display = 'block'; openBtn.disabled = false; }
+  const status = document.getElementById('cam-status');
+  if (status) status.textContent = '';
 }
 
 function scanFrame() {
   if (!camActive) return;
-  const video = document.getElementById('cam-video');
+  const video  = document.getElementById('cam-video');
   const canvas = document.getElementById('cam-canvas');
-  if (video.readyState !== video.HAVE_ENOUGH_DATA) {
-    camAnimFrame = requestAnimationFrame(scanFrame);
-    return;
-  }
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  if (video.readyState !== video.HAVE_ENOUGH_DATA) { camAnimFrame = requestAnimationFrame(scanFrame); return; }
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-  // Use jsQR to decode
+  ctx.drawImage(video, 0, 0);
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   if (typeof jsQR !== 'undefined') {
-    const code = jsQR(imageData.data, imageData.width, imageData.height, {
-      inversionAttempts: 'dontInvert'
-    });
+    const code = jsQR(imgData.data, imgData.width, imgData.height, {inversionAttempts:'dontInvert'});
     if (code && code.data) {
-      const dni = code.data.trim();
-      document.getElementById('cam-status').textContent = '✅ QR detectado: ' + dni;
+      const raw = code.data.trim();
+      // Extract DNI from hash URL or use raw value
+      let dni = raw;
+      if (raw.includes('#')) dni = raw.split('#').pop();
+      else if (raw.includes('code=')) dni = raw.split('code=')[1].split('&')[0];
+      document.getElementById('cam-status').textContent = '✅ Código detectado';
       document.getElementById('scan-input').value = dni;
       stopCamera();
-      setTimeout(() => registerAttendance(), 400);
+      setTimeout(() => showConfirm(), 300);
       return;
     }
   }
   camAnimFrame = requestAnimationFrame(scanFrame);
 }
 
-// ── PRELOAD STUDENTS ──────────────────────────────────────
-(function() {
-  const existing = localStorage.getItem('aqr_students');
-  if (!existing || JSON.parse(existing).length < 10) {
-    localStorage.setItem('aqr_students', JSON.stringify([{"name": "ACOSTA CUSSIGH, ENZO FABRICIO", "id": "46607967", "uid": "63393c82-6324-457b-8913-f92ac622aeb9"}, {"name": "Acosta, Lourdes Cecilia", "id": "46857724", "uid": "144bc50b-7477-4d2a-9788-97bf33f8f31f"}, {"name": "ACUÑA, BRUNO MATIAS ISMAEL", "id": "46075329", "uid": "5dca9fd6-a4b6-422e-97f0-9003d8adae40"}, {"name": "AGUILAR PÉREZ, Mateo", "id": "46462510", "uid": "cbd6afbb-3a89-42e5-8903-33831a27862c"}, {"name": "Aguilar, Ramón Jesús", "id": "47536776", "uid": "666fe06d-8ce9-427b-bde5-844c8868822e"}, {"name": "ALBORNOZ, TATIANA DIAMELA EMILCE", "id": "46715385", "uid": "c73e1310-9896-444a-a89e-8a3d2757935e"}, {"name": "Alvarez Maidana, Nahuel", "id": "47785293", "uid": "9bd84fae-c1cc-4ea1-836d-880ee776d1b5"}, {"name": "ANRIQUEZ, Ezequiel", "id": "37070737", "uid": "128ffe5a-f932-42a4-b0c8-4cb6b01b7069"}, {"name": "Aquino, Keren Lucila", "id": "45760663", "uid": "1bd166b9-88e8-463a-a92f-d2c4f8081160"}, {"name": "AVALOS, Joaquín", "id": "47857934", "uid": "50491381-0656-4322-b303-d3a82eae4e58"}, {"name": "AYALA, Melina", "id": "47524091", "uid": "80ab7afa-50d1-48eb-a817-202cfc9fbd24"}, {"name": "Barrientos, Carla Agostina", "id": "47895144", "uid": "bd2be956-f9ee-48e4-8441-9d9fb05558ea"}, {"name": "BENITEZ ARREGIN, Brenda", "id": "46912779", "uid": "131f9095-35b1-44f9-8897-b5e874e3fa96"}, {"name": "BENITEZ MAMBRIN, ALEJANDRA MAGALI", "id": "46718177", "uid": "5ae6e31e-ad68-429d-9d45-45fdc59b9efa"}, {"name": "BENITEZ SABOTIGH, Ana", "id": "47615848", "uid": "b7c11e8a-1054-485c-9723-fbe6f6d6626d"}, {"name": "BERGNA, JULIETA CONSTANZA", "id": "47041468", "uid": "6ad08438-8336-4d8f-8164-bc11b1cd9af6"}, {"name": "BERNAL PEREZ, LUCIANO EZEQUIEL", "id": "44470708", "uid": "bc50360d-d80c-419e-81d5-0f1030a908fc"}, {"name": "BLANCO, JULIETA DE LOS ANGELES", "id": "45374403", "uid": "0dc9d96b-64df-4c09-9276-3c27c2c49833"}, {"name": "Bogado Ramirez, Nicole Ángeles Yael", "id": "46149306", "uid": "84e95cd1-3f59-4153-82bd-e0e267e571e3"}, {"name": "Bogarin, Sofia Giuliana", "id": "48081628", "uid": "6aeb67b6-7446-42f0-b344-3edcdde54da4"}, {"name": "Bravo, Brenda Celeste", "id": "47235874", "uid": "744747ad-972e-49a1-9229-46ed95a9a35e"}, {"name": "Brignardello, Antonella", "id": "47857034", "uid": "358c425f-0f9a-4412-8e19-5e1a31e54d84"}, {"name": "BRITEZ, ESTEFANIS YASMIN", "id": "46924220", "uid": "e91d3bea-e23a-4889-b9c9-460e36f05a43"}, {"name": "Bustamante, Abril", "id": "47615549", "uid": "072c6bd3-1203-48c2-a5df-4f5b598a107f"}, {"name": "BUTARELLI, CAMILA AILEN", "id": "45370920", "uid": "f377c247-fd76-45cc-bcc4-9f970a0dea3a"}, {"name": "CABAÑA, LUNA", "id": "47856979", "uid": "aabfc11d-4f66-441d-9176-196beb38651b"}, {"name": "Cabral, Sheila Loana", "id": "47620101", "uid": "f69f3006-92d5-4020-9263-1454d663538f"}, {"name": "Caceres, Denisse Ailén", "id": "47538093", "uid": "15c3b715-aba8-48a6-b8e3-6260ff4600c3"}, {"name": "Caitano Bastiani, Maximiliano Augusto", "id": "47932934", "uid": "cbf3149d-a350-42fc-9b42-21a21f5607d2"}, {"name": "CANTEROS, JIMENA", "id": "47224614", "uid": "2e78eb2e-3916-4aea-be0e-0a6872999113"}, {"name": "Caravaca, Kiara", "id": "47228365", "uid": "4238b931-95e2-41cc-91db-0f103613849b"}, {"name": "CARBONEL PADILLA, MARIA ALEJANDRA", "id": "95439542", "uid": "4b398714-6a10-46ca-bee5-427dbbbe9d80"}, {"name": "Chavez, Valentina Micaela", "id": "47932627", "uid": "488d69d6-ad16-41b2-9440-f5f9ea4174aa"}, {"name": "Cohene, Enzo Luciano", "id": "46781581", "uid": "cf13060f-4f9e-496a-8312-13a63c6952e8"}, {"name": "COUTINHO, CAMILA", "id": "47991839", "uid": "eeac2941-59b8-4723-a75a-04d6dd00f406"}, {"name": "COUTINHO TUOTI, TRINIDAD INES", "id": "42098750", "uid": "9e402bee-4940-4a07-9b66-eab246657727"}, {"name": "Cuenca, Milena Abigail", "id": "47720117", "uid": "c2f60568-4d7c-4538-9447-3a35f9548267"}, {"name": "DAVALOS ESQUIVEL, MARTINA", "id": "43109669", "uid": "fdb8c7a9-d5d3-438d-b857-6caf2fc0b315"}, {"name": "De Bortoli, Renata", "id": "47856750", "uid": "b1d25bd7-5ff2-439b-b938-f494b337ead9"}, {"name": "Dino, Julia Anabella", "id": "46855968", "uid": "992f41ca-78a6-4409-9bc0-d7b2e26c78c8"}, {"name": "Domínguez Bogado, Rocío Soledad", "id": "47226071", "uid": "54b33845-b5bd-4201-9c54-7dd0df201a93"}, {"name": "Eidman, Yael Naiara", "id": "44470134", "uid": "feb5e73a-44e2-4aad-87ac-8bd8028e60b2"}, {"name": "Enriquez, Tiago", "id": "47366345", "uid": "fbd757c0-f23b-46e5-ada0-dd18ea756688"}, {"name": "Escobar, Milagros", "id": "47524549", "uid": "20edb52f-a033-445f-a429-7f0303b34f56"}, {"name": "ESCURRA, CHIARA GUILLERMINA", "id": "47895196", "uid": "05418fd6-4f3c-4b87-b98f-6807e2b5adb7"}, {"name": "Español, Sofia", "id": "47893570", "uid": "a124fdb8-2d0d-4cec-8b36-2f8491766707"}, {"name": "Espindola, Amanda Indira", "id": "47368121", "uid": "de0524d3-1ea3-481b-bfd3-b535a4e298fe"}, {"name": "ESPINOZA, LEO", "id": "42061735", "uid": "1f20a77a-6568-4eab-891b-9205787c904b"}, {"name": "Fariña, Valentina", "id": "46715584", "uid": "39e2d5be-d4f8-41df-9f48-2769db038b95"}, {"name": "FERNANDEZ, ANTONELLA MILAGROS", "id": "46514153", "uid": "d70e2b6a-4ef9-4d0c-83dc-464366f9e546"}, {"name": "Fernandez, Enzo Guillermo", "id": "40180262", "uid": "017a35ab-15e3-4cf8-8256-b39540e13f93"}, {"name": "FERNANDEZ GABE, CAMILA BELÉN", "id": "44826283", "uid": "a162c4ff-ebfe-4108-a8bd-f9fdb8f79686"}, {"name": "Fernández, Lara Agostina", "id": "47895427", "uid": "1ca39f98-6c45-4a8f-bfde-6572ddf44e88"}, {"name": "Fernández, Luciana Agustina", "id": "47524073", "uid": "9c05692f-7a12-45de-8279-48cb4725472f"}, {"name": "FERNANDEZ, SILVIA CLARA LUZ", "id": "45648645", "uid": "5f201723-3dac-40bd-9f40-4cf0293dc575"}, {"name": "FERNANDEZ, WANDA EIMI", "id": "46315675", "uid": "9cd20983-fe6e-41b8-81f1-51ccfb214c86"}, {"name": "Ferrero, Valentina Marianela Sol", "id": "47785313", "uid": "f9543022-7437-46f1-8e00-df29f880dde0"}, {"name": "Florentin, Celeste Gisel", "id": "46776992", "uid": "90bc33a7-adb6-4b1c-856d-a4daedb59478"}, {"name": "FRANCO, LUCIANA MICAELA", "id": "44718564", "uid": "72823dcb-754f-42c8-a652-5d25b5099773"}, {"name": "FRIAS, FLORENCIA ANAHÍ", "id": "46075345", "uid": "bf530501-4c32-4180-bbf2-3b5d3049a4f1"}, {"name": "Galarza Gonzalez, Milagros Anabela", "id": "38714448", "uid": "857b7d79-d99e-47a7-88e5-4bdc15eb0257"}, {"name": "Gallardo, Nicole Kiara Azul", "id": "47933717", "uid": "d77b4746-03bb-4c68-b923-33ceae74d2d1"}, {"name": "Gamarra, Carla Cristina", "id": "46808816", "uid": "efef0b7c-26af-466b-85d8-c6c007e6e6db"}, {"name": "GARCÍA, MARCOS ANTONIO LEONEL", "id": "41974504", "uid": "0d6ddaa7-ebe3-47fe-97c5-d885a4fb03c3"}, {"name": "Garcia, Martina Nair", "id": "47324477", "uid": "ede4ca38-16e7-4e70-bce9-c69aa1089706"}, {"name": "Gauna Hernandez, Lucia Magali", "id": "47895470", "uid": "4fcabac0-0e60-45bd-a5ac-1610f40e5ffd"}, {"name": "GIMENEZ, DIAMELA ADRIADNA", "id": "46673699", "uid": "75bcced1-5ae3-4dce-9bb0-4f029496c823"}, {"name": "Gimenez, Valentin", "id": "46857917", "uid": "0ea34a22-de1e-4c69-877d-ac24a2db48ea"}, {"name": "GOMEZ, ANGEL NATANAEL", "id": "47785837", "uid": "14171c94-4d0c-41f4-a3c8-dd8e4f1bba3b"}, {"name": "GOMEZ AYALA, LEANDRO EZEQUIEL", "id": "44089494", "uid": "ce686837-eec9-4764-a5bc-4590a9545b56"}, {"name": "Gomez Ayala, Nahuel Marcelo", "id": "47537522", "uid": "20abd7ca-97bf-449c-a712-6e52b7f92788"}, {"name": "Gomez, Karen Noemi", "id": "44467986", "uid": "b989265e-7427-4dd5-8541-aa1c7b2fed6c"}, {"name": "Gomez Lorefici, Nahiara Belén", "id": "44388500", "uid": "28c44094-764e-4504-af74-930af3655574"}, {"name": "Gomez, Lourdes Ludmila", "id": "47719999", "uid": "996e3e7e-e79f-4753-91fc-3ace34756222"}, {"name": "Gomez Luna, Lara Milagros", "id": "47228358", "uid": "7857a3cf-60e3-4b53-a713-9f829b87bfda"}, {"name": "GOMEZ, SANTIAGO IGNACIO", "id": "46716853", "uid": "244eec69-6ab6-49c8-ac79-6e7ca5c91d19"}, {"name": "Gomez Sibert, Masculino", "id": "45794300", "uid": "69d06067-1a2d-47e3-ae6c-019b61df401c"}, {"name": "GONZALEZ, CAMILA CELENA", "id": "45100367", "uid": "f4fa317c-28af-4c1f-aa79-239dd9ed9534"}, {"name": "GONZALEZ, CANDELA ZAIRA DANIELA", "id": "46384581", "uid": "5ced15a4-d1b5-4924-b548-c41b15ac5993"}, {"name": "GONZALEZ, Lixus", "id": "44408495", "uid": "59e0a683-7ede-4abc-b15a-d98089733c2c"}, {"name": "Gonzalez, Nicole Abigail", "id": "47524254", "uid": "d7111fc0-4159-4457-a2c6-ad07fbd16636"}, {"name": "GONZÁLEZ, ROCIO AILEN", "id": "44944870", "uid": "aa04637a-433e-4e10-988f-f212de3be887"}, {"name": "Gonzalez, Ximena Micaela", "id": "46602266", "uid": "1cb2e9b6-e6f5-4d38-82ba-8cc92e0fe67f"}, {"name": "GUERRERO, ANTONELA ASTRID", "id": "45558988", "uid": "40e6bfc9-f6ec-471b-88b3-d7522d5e1598"}, {"name": "Heñin, María Delfina", "id": "47856832", "uid": "9718d8ba-a1ef-45b3-b389-9e4e3603979c"}, {"name": "Hernandez, Candela", "id": "47423465", "uid": "5dce13a0-c365-4590-9b5e-0586a1594510"}, {"name": "Hidalgo, Darío Alexander", "id": "46518834", "uid": "1580cb5a-3466-4d04-97b3-0e7bb3e253d3"}, {"name": "Hüwel, Martina", "id": "47932916", "uid": "cb601045-5d5e-42e7-8dfb-bc95064388da"}, {"name": "Illa Sotelo, Gonzalo Lionel", "id": "47427388", "uid": "d616885d-1091-4d06-87ac-3c615f754c19"}, {"name": "Insaurralde, Abril Milagros", "id": "47423474", "uid": "b291d71e-f0a7-4095-8dc2-f56af01b4e48"}, {"name": "KISZCKA, Valentina", "id": "47323771", "uid": "f43d854e-d437-42ea-ab20-d11f4e74da38"}, {"name": "LEDESMA, MARINA EDITH", "id": "40912074", "uid": "f06ace13-69b1-4a02-870b-39e5aac61d94"}, {"name": "Lezcano Baldovino, Rocio", "id": "47932962", "uid": "8fc69f8e-1a34-4e9d-aeb7-6243aa634255"}, {"name": "Llopiz Morante, Agustina", "id": "44468707", "uid": "2af7f62d-496c-4ce4-8746-189cddc99e7c"}, {"name": "López Burgos, Melani Mailén", "id": "47042539", "uid": "0a55a40c-9651-49e1-b064-1469d496261b"}, {"name": "LÓPEZ, Jazmín", "id": "46855845", "uid": "9e358142-cb42-4a72-90aa-afbf028a3e6d"}, {"name": "LÓPEZ, LAUTARO DANIEL", "id": "47223880", "uid": "30fd4047-9b66-49c0-869e-ad2180c7cbff"}, {"name": "Lopez Origgi, ximena", "id": "46844241", "uid": "25c24090-eb87-4e5b-a664-696bf644222e"}, {"name": "Lugo Caceres, Sofia", "id": "46921759", "uid": "6d0d343e-b9f9-4c25-8c9f-aa61532e105e"}, {"name": "Luque, Madelen Lucero", "id": "48730408", "uid": "816dd845-09a1-46db-bb55-b8c59197d8fe"}, {"name": "Machuca, Agostina Maria Sol", "id": "47615456", "uid": "b679535a-3ea7-478a-a6eb-8cf751ff3e91"}, {"name": "MACHUCA, ARIADNA ANDREA ELIZABETH", "id": "44976807", "uid": "f5cba6fc-e454-4229-9f04-eef06935f59a"}, {"name": "MACIEL ROMERO, GUSTAVO ALEJANDRO", "id": "44198636", "uid": "433818a0-07fd-4ff5-baad-5e741dbc2ae8"}, {"name": "MADONA, Mauro", "id": "45794570", "uid": "36b37f60-f23a-4e0f-8a2e-0a2b786752f3"}, {"name": "MAIDANA, CONSTANZA NOEMÍ", "id": "45097363", "uid": "9eec7b15-3ab1-46b4-bd3d-0663be48ea36"}, {"name": "MAIDANA, FÁTIMA", "id": "44331669", "uid": "cadea361-5334-4cf1-bccd-ef6172242cb9"}, {"name": "MAIDANA ROMERO, FLORENCIA AGUSTINA", "id": "43275410", "uid": "81344051-eeb2-4cb4-8891-c6ddcdce8a31"}, {"name": "Maidana, Sofia Eliane", "id": "47421316", "uid": "1507404d-e9fc-40ed-8126-4a3401537ecc"}, {"name": "MAIORANA, MILENA", "id": "43535589", "uid": "bf870a3a-becf-40c2-b0d2-4278b468a117"}, {"name": "MARISCAL, GLORIA ALEJANDRA", "id": "43299962", "uid": "3e778b09-9b08-4f89-bee8-e2045f8d78ee"}, {"name": "Marucci Vera, Fabricio Joel", "id": "48080163", "uid": "e448bd99-fbdc-4c12-9705-dbf700d1b468"}, {"name": "MAUREL, SOL SABRINA ARIELA", "id": "43885133", "uid": "db3ca1c4-04f5-4456-8aed-b3c4dd70cba0"}, {"name": "Medina Lugo, Nariana Shaiel", "id": "48081956", "uid": "203960dd-23f0-4774-bb85-d3adb22538d9"}, {"name": "MERLO, ALDANA ARACELI", "id": "47857005", "uid": "f501a23b-1658-4487-a982-366a30c63948"}, {"name": "Mierez, Milena Sofía", "id": "47932908", "uid": "b948ed65-eb35-4d88-b566-90cb61f63e47"}, {"name": "MIÑO DIAZ, Miño Dia Damaris", "id": "43747699", "uid": "8067fcbb-586e-4380-bf8d-09de28859ac7"}, {"name": "Montenegro, Adriel Martin", "id": "46988728", "uid": "16241ded-d517-404a-acad-483c992ab7bd"}, {"name": "Monzon, Daiana Aylen", "id": "47856968", "uid": "ee962fed-62af-4318-808d-1524010bd0be"}, {"name": "MONZÓN RUIZ DIAZ, ROCÍO AILÉN", "id": "46512698", "uid": "5983e532-bbd9-434e-b354-1c1d7bc301ee"}, {"name": "MORA, MALAQUIAS MATIAS GABRIEL", "id": "45944369", "uid": "0b6c9461-50e6-4f26-bbab-fe18dd348cb4"}, {"name": "Moreira Cabral, Lujan Ainara", "id": "47894709", "uid": "d48d6e12-af77-4067-bcde-cc359833cc24"}, {"name": "Nacimento, Juan Francisco", "id": "48130541", "uid": "6cc651d0-58a3-4b01-893f-88f7da8fd521"}, {"name": "NUÑEZ, LARA DANIELA", "id": "45250276", "uid": "4c67e0ea-b82b-4650-879f-3162b48b6930"}, {"name": "Nuñez, Tomás", "id": "47368477", "uid": "b129b8fa-eec0-49b9-990d-c2d2c6825d81"}, {"name": "OJEDA, LAUTARO EZEQUIEL", "id": "44470140", "uid": "86d3bf82-9782-4eda-b12b-2477ca14da87"}, {"name": "OLIVARES, DANIELA MELINA", "id": "46075414", "uid": "bb62a408-b3b7-4833-b99b-6824d304d8fe"}, {"name": "OLMEDO, JOSÉ MARTÍ", "id": "47995383", "uid": "711fe01d-0543-4f0b-8b30-cbe6c2b7d049"}, {"name": "ORTMANN, DAMARIS DANIELA", "id": "41903927", "uid": "9107545d-ec52-4fd0-83ac-28c858ad18ab"}, {"name": "OVIEDO MARTINEZ, LURDES ANALUZ", "id": "46963469", "uid": "595044da-a375-4b75-8a0d-ed206e3bd7ac"}, {"name": "PANIAGUA GALEANO, KAMILO EZEQUIEL", "id": "45643322", "uid": "4937321b-6732-48e0-b80c-cc14ecec4d6c"}, {"name": "PELOSO, NATALIA SOLEDAD", "id": "26432848", "uid": "91ef090b-a781-493f-9d6e-dd1059c308b8"}, {"name": "Peralta, Joan", "id": "47368472", "uid": "e08a2676-e90d-4cbd-8995-c45747dd6baa"}, {"name": "Perez, Ludmila Dahiana Belen", "id": "47537122", "uid": "3d57d1e7-45bc-45b3-91d7-b6726f23fcca"}, {"name": "PÉREZ, MALENA", "id": "44826003", "uid": "696acb47-242d-4829-859d-f23e9cf01d2b"}, {"name": "Pineda, Valentina, Celeste", "id": "47324224", "uid": "e7928b57-1858-4bdc-87e5-f1231887778f"}, {"name": "POLICH BORDA, NAHUEL AGUSTÍN", "id": "45044456", "uid": "3209e014-10ce-49e3-bfce-db2b377db815"}, {"name": "Ponce, Eduardo Daniel", "id": "47227442", "uid": "885cbf69-0c34-4f68-a665-df2bd7ee6023"}, {"name": "Portillo, Javier", "id": "47422366", "uid": "fdf64647-2fce-432d-917c-d021b599e443"}, {"name": "Prieto Fernandez, Enzo Gabriel", "id": "44826508", "uid": "d0ce4a0a-8f72-4f3e-8b8b-fd01fb1a0314"}, {"name": "QUINTANA, DAIANA AYELÉN", "id": "46818725", "uid": "8932c2fe-3abd-4149-95f4-7abcb7dde53f"}, {"name": "Quirico, Mauricio Martin", "id": "46773078", "uid": "af0e530f-bc2e-4db5-a507-3d5b267742c8"}, {"name": "QUIROZ, NERINA ABIGAIL", "id": "46840708", "uid": "8326c0f6-f709-4bf6-8280-a4bf7390a0fe"}, {"name": "Rafart Allende, Rosario", "id": "46463247", "uid": "7e068878-dc60-4889-9ad6-1e9de039bd5d"}, {"name": "REPETTO ANDRIANI, GIULIANA", "id": "44000175", "uid": "c6e6d6c8-f380-448f-a2d3-d5505d5e3a36"}, {"name": "RETAMOZA, SELENA", "id": "43932649", "uid": "81bb465a-a029-4d48-85b7-83bb061f35c8"}, {"name": "Rodriguez, María Eugenia", "id": "46074482", "uid": "232bbe56-9f7c-4617-a6d8-2092adb122c5"}, {"name": "RODRIGUEZ, MILAGROS VALENTINA", "id": "47539020", "uid": "457f5853-2261-499c-ab0f-db18b1d34db7"}, {"name": "Rodriguez, Pablo Matías", "id": "47004506", "uid": "cada0666-7d58-49de-8162-de4b012b52f3"}, {"name": "RODRIGUEZ PARDO, ABRIL AGUSTINA", "id": "45097977", "uid": "f85071cc-2db2-4696-a792-b38d2dbbcb20"}, {"name": "Rodriguez Salinas, Eliana Alejandra", "id": "47619911", "uid": "2a4f1d8c-3804-44b0-900a-28680e424c04"}, {"name": "Rolon Frias, Guada", "id": "47857932", "uid": "a2e89a2f-0bf2-41f2-8ade-7190dea7d7cb"}, {"name": "ROMAGNOLI, LUCIA ABIGAIL", "id": "46924433", "uid": "dcb4b3c7-5474-49ab-8433-678ba69996d4"}, {"name": "ROMERO, DAIANA VICTORIA", "id": "46064581", "uid": "3010d4c9-2267-4e54-95b8-a2a5360565d0"}, {"name": "ROMERO, Federico Nicolás", "id": "46313538", "uid": "57c80c31-0b75-4075-b373-2a539f88d9c6"}, {"name": "Romero Hardy, Pilar", "id": "46462786", "uid": "928b026e-9a12-4733-bfdc-3e576f4b48a0"}, {"name": "Romero, Victoria Maité", "id": "47619284", "uid": "cf636e82-79d1-469f-b3f3-64a1791965dc"}, {"name": "RUIZ DIAZ, VALENTINA", "id": "48081955", "uid": "4c804852-936f-4684-8d8e-9b247c59a179"}, {"name": "Saavedra, Abril Naihara", "id": "46246025", "uid": "12b085c7-f995-418a-9cc9-ce6e823f0f25"}, {"name": "Saffadi, Ludmila Oriana", "id": "47421359", "uid": "2fdd05e1-9147-43b5-b06a-0bed8afb1d75"}, {"name": "SCALAMOGNA, AGOSTINA LUCIANA", "id": "47932768", "uid": "830bb7e2-89e1-4a2c-b122-bbda66210f86"}, {"name": "SILVA, MARIA PAULA", "id": "34941287", "uid": "73221590-9ff1-4c70-a934-aeb04da52a40"}, {"name": "SOBRADO, victoria", "id": "46383722", "uid": "e8217a68-7c97-4c60-bcad-c22288b53539"}, {"name": "Solis, clelia", "id": "38967351", "uid": "7f6cc357-509a-4e33-8895-aeb8bfbdfae7"}, {"name": "Solis, Gimena Victoria Juana", "id": "46856411", "uid": "451eadba-80c7-4178-8342-0887da3cc627"}, {"name": "SOSA, Marcela", "id": "44976338", "uid": "fe8b3dcb-908a-4a2d-bee6-ea118dfdd7cd"}, {"name": "SOTO, MICAELA ANAHÍ", "id": "44085929", "uid": "a74b2397-2138-401b-a3c1-bf1f16c88598"}, {"name": "TORRES, YULIANA CAMILA", "id": "45453131", "uid": "65fadf6c-c4d5-470b-9bd9-3c823b76827a"}, {"name": "Torres, Camila Maria Lujan", "id": "45642571", "uid": "2234cb42-ae67-423e-b58d-516465796221"}, {"name": "TORRES, DAIRA PRISCILA", "id": "46775173", "uid": "8c44858e-24d5-4532-97f0-53e11ddf594e"}, {"name": "TORRES MOLINA, ELIAS EZEQUIEL", "id": "44089474", "uid": "0cd34632-bd54-481c-a33c-bd306d824ea4"}, {"name": "TOURN, ORIANA ANGELINA", "id": "44944122", "uid": "ec417004-fb6b-4260-bd29-3cc5a30614ee"}, {"name": "Urne Ayala, Gonzalo Agustín", "id": "47993412", "uid": "07bc9ccf-baa5-416b-8464-b5faa2f42cf0"}, {"name": "Valdez, Lara Ximena", "id": "47785286", "uid": "6382c0a5-2918-453f-89cf-2245a3c5f5ae"}, {"name": "Valdez, Miqueas", "id": "47618933", "uid": "02e78790-33b7-4fff-b5ae-6c108339f1e6"}, {"name": "Valenzuela, Ludmila", "id": "47895604", "uid": "09552a5f-4063-4451-92d3-af08ce99be8c"}, {"name": "VALLEJOS PEREYRA, SOFIA NAZARET", "id": "44196082", "uid": "1cd02cb9-8467-4ad7-81c2-b241eacb3040"}, {"name": "Velez, Guillermina", "id": "47536815", "uid": "acd48679-b4f4-4c3c-9ca7-f30f6103f28d"}, {"name": "VERA MONZÓN, GASTON DANIEL", "id": "43438003", "uid": "61cf7a4b-ddd3-4a97-8ef9-761abb699966"}, {"name": "Veron Paret, Delfina Juliana", "id": "47614461", "uid": "3515378b-98a9-448d-aa1f-0371290e22e2"}, {"name": "Veron, Tatiana Maria José", "id": "46963320", "uid": "1a8caa29-36d9-4d4a-82fb-03701201e92b"}, {"name": "Verri, Julieta Yazmin", "id": "44221643", "uid": "46c04d89-6ce6-4c8f-9903-0cb7811f1f32"}, {"name": "WEIGANDT, NEHEMIAS JOEL", "id": "47537808", "uid": "31aa8dda-5d41-4b2b-ada4-381f943b0c97"}, {"name": "WOJTUN, KEVIN TOMAS", "id": "46383787", "uid": "bb328daa-e949-4184-9c00-cab371a1fbff"}, {"name": "Young Billasante, Bárbara", "id": "44976848", "uid": "cc95edad-7acf-47e7-bcd1-cbdd45b8faa0"}, {"name": "ZAMUDIO, LISSETH DESIREÉ", "id": "46316628", "uid": "bb4ad82d-b65d-4b6e-bd6a-91dfa55bc8dd"}, {"name": "Alderete, José Gabriel", "id": "29044986", "uid": "0acef768-8477-44f1-ae87-ae60d3e57f57"}]));
-    students = [{"name": "ACOSTA CUSSIGH, ENZO FABRICIO", "id": "46607967", "uid": "63393c82-6324-457b-8913-f92ac622aeb9"}, {"name": "Acosta, Lourdes Cecilia", "id": "46857724", "uid": "144bc50b-7477-4d2a-9788-97bf33f8f31f"}, {"name": "ACUÑA, BRUNO MATIAS ISMAEL", "id": "46075329", "uid": "5dca9fd6-a4b6-422e-97f0-9003d8adae40"}, {"name": "AGUILAR PÉREZ, Mateo", "id": "46462510", "uid": "cbd6afbb-3a89-42e5-8903-33831a27862c"}, {"name": "Aguilar, Ramón Jesús", "id": "47536776", "uid": "666fe06d-8ce9-427b-bde5-844c8868822e"}, {"name": "ALBORNOZ, TATIANA DIAMELA EMILCE", "id": "46715385", "uid": "c73e1310-9896-444a-a89e-8a3d2757935e"}, {"name": "Alvarez Maidana, Nahuel", "id": "47785293", "uid": "9bd84fae-c1cc-4ea1-836d-880ee776d1b5"}, {"name": "ANRIQUEZ, Ezequiel", "id": "37070737", "uid": "128ffe5a-f932-42a4-b0c8-4cb6b01b7069"}, {"name": "Aquino, Keren Lucila", "id": "45760663", "uid": "1bd166b9-88e8-463a-a92f-d2c4f8081160"}, {"name": "AVALOS, Joaquín", "id": "47857934", "uid": "50491381-0656-4322-b303-d3a82eae4e58"}, {"name": "AYALA, Melina", "id": "47524091", "uid": "80ab7afa-50d1-48eb-a817-202cfc9fbd24"}, {"name": "Barrientos, Carla Agostina", "id": "47895144", "uid": "bd2be956-f9ee-48e4-8441-9d9fb05558ea"}, {"name": "BENITEZ ARREGIN, Brenda", "id": "46912779", "uid": "131f9095-35b1-44f9-8897-b5e874e3fa96"}, {"name": "BENITEZ MAMBRIN, ALEJANDRA MAGALI", "id": "46718177", "uid": "5ae6e31e-ad68-429d-9d45-45fdc59b9efa"}, {"name": "BENITEZ SABOTIGH, Ana", "id": "47615848", "uid": "b7c11e8a-1054-485c-9723-fbe6f6d6626d"}, {"name": "BERGNA, JULIETA CONSTANZA", "id": "47041468", "uid": "6ad08438-8336-4d8f-8164-bc11b1cd9af6"}, {"name": "BERNAL PEREZ, LUCIANO EZEQUIEL", "id": "44470708", "uid": "bc50360d-d80c-419e-81d5-0f1030a908fc"}, {"name": "BLANCO, JULIETA DE LOS ANGELES", "id": "45374403", "uid": "0dc9d96b-64df-4c09-9276-3c27c2c49833"}, {"name": "Bogado Ramirez, Nicole Ángeles Yael", "id": "46149306", "uid": "84e95cd1-3f59-4153-82bd-e0e267e571e3"}, {"name": "Bogarin, Sofia Giuliana", "id": "48081628", "uid": "6aeb67b6-7446-42f0-b344-3edcdde54da4"}, {"name": "Bravo, Brenda Celeste", "id": "47235874", "uid": "744747ad-972e-49a1-9229-46ed95a9a35e"}, {"name": "Brignardello, Antonella", "id": "47857034", "uid": "358c425f-0f9a-4412-8e19-5e1a31e54d84"}, {"name": "BRITEZ, ESTEFANIS YASMIN", "id": "46924220", "uid": "e91d3bea-e23a-4889-b9c9-460e36f05a43"}, {"name": "Bustamante, Abril", "id": "47615549", "uid": "072c6bd3-1203-48c2-a5df-4f5b598a107f"}, {"name": "BUTARELLI, CAMILA AILEN", "id": "45370920", "uid": "f377c247-fd76-45cc-bcc4-9f970a0dea3a"}, {"name": "CABAÑA, LUNA", "id": "47856979", "uid": "aabfc11d-4f66-441d-9176-196beb38651b"}, {"name": "Cabral, Sheila Loana", "id": "47620101", "uid": "f69f3006-92d5-4020-9263-1454d663538f"}, {"name": "Caceres, Denisse Ailén", "id": "47538093", "uid": "15c3b715-aba8-48a6-b8e3-6260ff4600c3"}, {"name": "Caitano Bastiani, Maximiliano Augusto", "id": "47932934", "uid": "cbf3149d-a350-42fc-9b42-21a21f5607d2"}, {"name": "CANTEROS, JIMENA", "id": "47224614", "uid": "2e78eb2e-3916-4aea-be0e-0a6872999113"}, {"name": "Caravaca, Kiara", "id": "47228365", "uid": "4238b931-95e2-41cc-91db-0f103613849b"}, {"name": "CARBONEL PADILLA, MARIA ALEJANDRA", "id": "95439542", "uid": "4b398714-6a10-46ca-bee5-427dbbbe9d80"}, {"name": "Chavez, Valentina Micaela", "id": "47932627", "uid": "488d69d6-ad16-41b2-9440-f5f9ea4174aa"}, {"name": "Cohene, Enzo Luciano", "id": "46781581", "uid": "cf13060f-4f9e-496a-8312-13a63c6952e8"}, {"name": "COUTINHO, CAMILA", "id": "47991839", "uid": "eeac2941-59b8-4723-a75a-04d6dd00f406"}, {"name": "COUTINHO TUOTI, TRINIDAD INES", "id": "42098750", "uid": "9e402bee-4940-4a07-9b66-eab246657727"}, {"name": "Cuenca, Milena Abigail", "id": "47720117", "uid": "c2f60568-4d7c-4538-9447-3a35f9548267"}, {"name": "DAVALOS ESQUIVEL, MARTINA", "id": "43109669", "uid": "fdb8c7a9-d5d3-438d-b857-6caf2fc0b315"}, {"name": "De Bortoli, Renata", "id": "47856750", "uid": "b1d25bd7-5ff2-439b-b938-f494b337ead9"}, {"name": "Dino, Julia Anabella", "id": "46855968", "uid": "992f41ca-78a6-4409-9bc0-d7b2e26c78c8"}, {"name": "Domínguez Bogado, Rocío Soledad", "id": "47226071", "uid": "54b33845-b5bd-4201-9c54-7dd0df201a93"}, {"name": "Eidman, Yael Naiara", "id": "44470134", "uid": "feb5e73a-44e2-4aad-87ac-8bd8028e60b2"}, {"name": "Enriquez, Tiago", "id": "47366345", "uid": "fbd757c0-f23b-46e5-ada0-dd18ea756688"}, {"name": "Escobar, Milagros", "id": "47524549", "uid": "20edb52f-a033-445f-a429-7f0303b34f56"}, {"name": "ESCURRA, CHIARA GUILLERMINA", "id": "47895196", "uid": "05418fd6-4f3c-4b87-b98f-6807e2b5adb7"}, {"name": "Español, Sofia", "id": "47893570", "uid": "a124fdb8-2d0d-4cec-8b36-2f8491766707"}, {"name": "Espindola, Amanda Indira", "id": "47368121", "uid": "de0524d3-1ea3-481b-bfd3-b535a4e298fe"}, {"name": "ESPINOZA, LEO", "id": "42061735", "uid": "1f20a77a-6568-4eab-891b-9205787c904b"}, {"name": "Fariña, Valentina", "id": "46715584", "uid": "39e2d5be-d4f8-41df-9f48-2769db038b95"}, {"name": "FERNANDEZ, ANTONELLA MILAGROS", "id": "46514153", "uid": "d70e2b6a-4ef9-4d0c-83dc-464366f9e546"}, {"name": "Fernandez, Enzo Guillermo", "id": "40180262", "uid": "017a35ab-15e3-4cf8-8256-b39540e13f93"}, {"name": "FERNANDEZ GABE, CAMILA BELÉN", "id": "44826283", "uid": "a162c4ff-ebfe-4108-a8bd-f9fdb8f79686"}, {"name": "Fernández, Lara Agostina", "id": "47895427", "uid": "1ca39f98-6c45-4a8f-bfde-6572ddf44e88"}, {"name": "Fernández, Luciana Agustina", "id": "47524073", "uid": "9c05692f-7a12-45de-8279-48cb4725472f"}, {"name": "FERNANDEZ, SILVIA CLARA LUZ", "id": "45648645", "uid": "5f201723-3dac-40bd-9f40-4cf0293dc575"}, {"name": "FERNANDEZ, WANDA EIMI", "id": "46315675", "uid": "9cd20983-fe6e-41b8-81f1-51ccfb214c86"}, {"name": "Ferrero, Valentina Marianela Sol", "id": "47785313", "uid": "f9543022-7437-46f1-8e00-df29f880dde0"}, {"name": "Florentin, Celeste Gisel", "id": "46776992", "uid": "90bc33a7-adb6-4b1c-856d-a4daedb59478"}, {"name": "FRANCO, LUCIANA MICAELA", "id": "44718564", "uid": "72823dcb-754f-42c8-a652-5d25b5099773"}, {"name": "FRIAS, FLORENCIA ANAHÍ", "id": "46075345", "uid": "bf530501-4c32-4180-bbf2-3b5d3049a4f1"}, {"name": "Galarza Gonzalez, Milagros Anabela", "id": "38714448", "uid": "857b7d79-d99e-47a7-88e5-4bdc15eb0257"}, {"name": "Gallardo, Nicole Kiara Azul", "id": "47933717", "uid": "d77b4746-03bb-4c68-b923-33ceae74d2d1"}, {"name": "Gamarra, Carla Cristina", "id": "46808816", "uid": "efef0b7c-26af-466b-85d8-c6c007e6e6db"}, {"name": "GARCÍA, MARCOS ANTONIO LEONEL", "id": "41974504", "uid": "0d6ddaa7-ebe3-47fe-97c5-d885a4fb03c3"}, {"name": "Garcia, Martina Nair", "id": "47324477", "uid": "ede4ca38-16e7-4e70-bce9-c69aa1089706"}, {"name": "Gauna Hernandez, Lucia Magali", "id": "47895470", "uid": "4fcabac0-0e60-45bd-a5ac-1610f40e5ffd"}, {"name": "GIMENEZ, DIAMELA ADRIADNA", "id": "46673699", "uid": "75bcced1-5ae3-4dce-9bb0-4f029496c823"}, {"name": "Gimenez, Valentin", "id": "46857917", "uid": "0ea34a22-de1e-4c69-877d-ac24a2db48ea"}, {"name": "GOMEZ, ANGEL NATANAEL", "id": "47785837", "uid": "14171c94-4d0c-41f4-a3c8-dd8e4f1bba3b"}, {"name": "GOMEZ AYALA, LEANDRO EZEQUIEL", "id": "44089494", "uid": "ce686837-eec9-4764-a5bc-4590a9545b56"}, {"name": "Gomez Ayala, Nahuel Marcelo", "id": "47537522", "uid": "20abd7ca-97bf-449c-a712-6e52b7f92788"}, {"name": "Gomez, Karen Noemi", "id": "44467986", "uid": "b989265e-7427-4dd5-8541-aa1c7b2fed6c"}, {"name": "Gomez Lorefici, Nahiara Belén", "id": "44388500", "uid": "28c44094-764e-4504-af74-930af3655574"}, {"name": "Gomez, Lourdes Ludmila", "id": "47719999", "uid": "996e3e7e-e79f-4753-91fc-3ace34756222"}, {"name": "Gomez Luna, Lara Milagros", "id": "47228358", "uid": "7857a3cf-60e3-4b53-a713-9f829b87bfda"}, {"name": "GOMEZ, SANTIAGO IGNACIO", "id": "46716853", "uid": "244eec69-6ab6-49c8-ac79-6e7ca5c91d19"}, {"name": "Gomez Sibert, Masculino", "id": "45794300", "uid": "69d06067-1a2d-47e3-ae6c-019b61df401c"}, {"name": "GONZALEZ, CAMILA CELENA", "id": "45100367", "uid": "f4fa317c-28af-4c1f-aa79-239dd9ed9534"}, {"name": "GONZALEZ, CANDELA ZAIRA DANIELA", "id": "46384581", "uid": "5ced15a4-d1b5-4924-b548-c41b15ac5993"}, {"name": "GONZALEZ, Lixus", "id": "44408495", "uid": "59e0a683-7ede-4abc-b15a-d98089733c2c"}, {"name": "Gonzalez, Nicole Abigail", "id": "47524254", "uid": "d7111fc0-4159-4457-a2c6-ad07fbd16636"}, {"name": "GONZÁLEZ, ROCIO AILEN", "id": "44944870", "uid": "aa04637a-433e-4e10-988f-f212de3be887"}, {"name": "Gonzalez, Ximena Micaela", "id": "46602266", "uid": "1cb2e9b6-e6f5-4d38-82ba-8cc92e0fe67f"}, {"name": "GUERRERO, ANTONELA ASTRID", "id": "45558988", "uid": "40e6bfc9-f6ec-471b-88b3-d7522d5e1598"}, {"name": "Heñin, María Delfina", "id": "47856832", "uid": "9718d8ba-a1ef-45b3-b389-9e4e3603979c"}, {"name": "Hernandez, Candela", "id": "47423465", "uid": "5dce13a0-c365-4590-9b5e-0586a1594510"}, {"name": "Hidalgo, Darío Alexander", "id": "46518834", "uid": "1580cb5a-3466-4d04-97b3-0e7bb3e253d3"}, {"name": "Hüwel, Martina", "id": "47932916", "uid": "cb601045-5d5e-42e7-8dfb-bc95064388da"}, {"name": "Illa Sotelo, Gonzalo Lionel", "id": "47427388", "uid": "d616885d-1091-4d06-87ac-3c615f754c19"}, {"name": "Insaurralde, Abril Milagros", "id": "47423474", "uid": "b291d71e-f0a7-4095-8dc2-f56af01b4e48"}, {"name": "KISZCKA, Valentina", "id": "47323771", "uid": "f43d854e-d437-42ea-ab20-d11f4e74da38"}, {"name": "LEDESMA, MARINA EDITH", "id": "40912074", "uid": "f06ace13-69b1-4a02-870b-39e5aac61d94"}, {"name": "Lezcano Baldovino, Rocio", "id": "47932962", "uid": "8fc69f8e-1a34-4e9d-aeb7-6243aa634255"}, {"name": "Llopiz Morante, Agustina", "id": "44468707", "uid": "2af7f62d-496c-4ce4-8746-189cddc99e7c"}, {"name": "López Burgos, Melani Mailén", "id": "47042539", "uid": "0a55a40c-9651-49e1-b064-1469d496261b"}, {"name": "LÓPEZ, Jazmín", "id": "46855845", "uid": "9e358142-cb42-4a72-90aa-afbf028a3e6d"}, {"name": "LÓPEZ, LAUTARO DANIEL", "id": "47223880", "uid": "30fd4047-9b66-49c0-869e-ad2180c7cbff"}, {"name": "Lopez Origgi, ximena", "id": "46844241", "uid": "25c24090-eb87-4e5b-a664-696bf644222e"}, {"name": "Lugo Caceres, Sofia", "id": "46921759", "uid": "6d0d343e-b9f9-4c25-8c9f-aa61532e105e"}, {"name": "Luque, Madelen Lucero", "id": "48730408", "uid": "816dd845-09a1-46db-bb55-b8c59197d8fe"}, {"name": "Machuca, Agostina Maria Sol", "id": "47615456", "uid": "b679535a-3ea7-478a-a6eb-8cf751ff3e91"}, {"name": "MACHUCA, ARIADNA ANDREA ELIZABETH", "id": "44976807", "uid": "f5cba6fc-e454-4229-9f04-eef06935f59a"}, {"name": "MACIEL ROMERO, GUSTAVO ALEJANDRO", "id": "44198636", "uid": "433818a0-07fd-4ff5-baad-5e741dbc2ae8"}, {"name": "MADONA, Mauro", "id": "45794570", "uid": "36b37f60-f23a-4e0f-8a2e-0a2b786752f3"}, {"name": "MAIDANA, CONSTANZA NOEMÍ", "id": "45097363", "uid": "9eec7b15-3ab1-46b4-bd3d-0663be48ea36"}, {"name": "MAIDANA, FÁTIMA", "id": "44331669", "uid": "cadea361-5334-4cf1-bccd-ef6172242cb9"}, {"name": "MAIDANA ROMERO, FLORENCIA AGUSTINA", "id": "43275410", "uid": "81344051-eeb2-4cb4-8891-c6ddcdce8a31"}, {"name": "Maidana, Sofia Eliane", "id": "47421316", "uid": "1507404d-e9fc-40ed-8126-4a3401537ecc"}, {"name": "MAIORANA, MILENA", "id": "43535589", "uid": "bf870a3a-becf-40c2-b0d2-4278b468a117"}, {"name": "MARISCAL, GLORIA ALEJANDRA", "id": "43299962", "uid": "3e778b09-9b08-4f89-bee8-e2045f8d78ee"}, {"name": "Marucci Vera, Fabricio Joel", "id": "48080163", "uid": "e448bd99-fbdc-4c12-9705-dbf700d1b468"}, {"name": "MAUREL, SOL SABRINA ARIELA", "id": "43885133", "uid": "db3ca1c4-04f5-4456-8aed-b3c4dd70cba0"}, {"name": "Medina Lugo, Nariana Shaiel", "id": "48081956", "uid": "203960dd-23f0-4774-bb85-d3adb22538d9"}, {"name": "MERLO, ALDANA ARACELI", "id": "47857005", "uid": "f501a23b-1658-4487-a982-366a30c63948"}, {"name": "Mierez, Milena Sofía", "id": "47932908", "uid": "b948ed65-eb35-4d88-b566-90cb61f63e47"}, {"name": "MIÑO DIAZ, Miño Dia Damaris", "id": "43747699", "uid": "8067fcbb-586e-4380-bf8d-09de28859ac7"}, {"name": "Montenegro, Adriel Martin", "id": "46988728", "uid": "16241ded-d517-404a-acad-483c992ab7bd"}, {"name": "Monzon, Daiana Aylen", "id": "47856968", "uid": "ee962fed-62af-4318-808d-1524010bd0be"}, {"name": "MONZÓN RUIZ DIAZ, ROCÍO AILÉN", "id": "46512698", "uid": "5983e532-bbd9-434e-b354-1c1d7bc301ee"}, {"name": "MORA, MALAQUIAS MATIAS GABRIEL", "id": "45944369", "uid": "0b6c9461-50e6-4f26-bbab-fe18dd348cb4"}, {"name": "Moreira Cabral, Lujan Ainara", "id": "47894709", "uid": "d48d6e12-af77-4067-bcde-cc359833cc24"}, {"name": "Nacimento, Juan Francisco", "id": "48130541", "uid": "6cc651d0-58a3-4b01-893f-88f7da8fd521"}, {"name": "NUÑEZ, LARA DANIELA", "id": "45250276", "uid": "4c67e0ea-b82b-4650-879f-3162b48b6930"}, {"name": "Nuñez, Tomás", "id": "47368477", "uid": "b129b8fa-eec0-49b9-990d-c2d2c6825d81"}, {"name": "OJEDA, LAUTARO EZEQUIEL", "id": "44470140", "uid": "86d3bf82-9782-4eda-b12b-2477ca14da87"}, {"name": "OLIVARES, DANIELA MELINA", "id": "46075414", "uid": "bb62a408-b3b7-4833-b99b-6824d304d8fe"}, {"name": "OLMEDO, JOSÉ MARTÍ", "id": "47995383", "uid": "711fe01d-0543-4f0b-8b30-cbe6c2b7d049"}, {"name": "ORTMANN, DAMARIS DANIELA", "id": "41903927", "uid": "9107545d-ec52-4fd0-83ac-28c858ad18ab"}, {"name": "OVIEDO MARTINEZ, LURDES ANALUZ", "id": "46963469", "uid": "595044da-a375-4b75-8a0d-ed206e3bd7ac"}, {"name": "PANIAGUA GALEANO, KAMILO EZEQUIEL", "id": "45643322", "uid": "4937321b-6732-48e0-b80c-cc14ecec4d6c"}, {"name": "PELOSO, NATALIA SOLEDAD", "id": "26432848", "uid": "91ef090b-a781-493f-9d6e-dd1059c308b8"}, {"name": "Peralta, Joan", "id": "47368472", "uid": "e08a2676-e90d-4cbd-8995-c45747dd6baa"}, {"name": "Perez, Ludmila Dahiana Belen", "id": "47537122", "uid": "3d57d1e7-45bc-45b3-91d7-b6726f23fcca"}, {"name": "PÉREZ, MALENA", "id": "44826003", "uid": "696acb47-242d-4829-859d-f23e9cf01d2b"}, {"name": "Pineda, Valentina, Celeste", "id": "47324224", "uid": "e7928b57-1858-4bdc-87e5-f1231887778f"}, {"name": "POLICH BORDA, NAHUEL AGUSTÍN", "id": "45044456", "uid": "3209e014-10ce-49e3-bfce-db2b377db815"}, {"name": "Ponce, Eduardo Daniel", "id": "47227442", "uid": "885cbf69-0c34-4f68-a665-df2bd7ee6023"}, {"name": "Portillo, Javier", "id": "47422366", "uid": "fdf64647-2fce-432d-917c-d021b599e443"}, {"name": "Prieto Fernandez, Enzo Gabriel", "id": "44826508", "uid": "d0ce4a0a-8f72-4f3e-8b8b-fd01fb1a0314"}, {"name": "QUINTANA, DAIANA AYELÉN", "id": "46818725", "uid": "8932c2fe-3abd-4149-95f4-7abcb7dde53f"}, {"name": "Quirico, Mauricio Martin", "id": "46773078", "uid": "af0e530f-bc2e-4db5-a507-3d5b267742c8"}, {"name": "QUIROZ, NERINA ABIGAIL", "id": "46840708", "uid": "8326c0f6-f709-4bf6-8280-a4bf7390a0fe"}, {"name": "Rafart Allende, Rosario", "id": "46463247", "uid": "7e068878-dc60-4889-9ad6-1e9de039bd5d"}, {"name": "REPETTO ANDRIANI, GIULIANA", "id": "44000175", "uid": "c6e6d6c8-f380-448f-a2d3-d5505d5e3a36"}, {"name": "RETAMOZA, SELENA", "id": "43932649", "uid": "81bb465a-a029-4d48-85b7-83bb061f35c8"}, {"name": "Rodriguez, María Eugenia", "id": "46074482", "uid": "232bbe56-9f7c-4617-a6d8-2092adb122c5"}, {"name": "RODRIGUEZ, MILAGROS VALENTINA", "id": "47539020", "uid": "457f5853-2261-499c-ab0f-db18b1d34db7"}, {"name": "Rodriguez, Pablo Matías", "id": "47004506", "uid": "cada0666-7d58-49de-8162-de4b012b52f3"}, {"name": "RODRIGUEZ PARDO, ABRIL AGUSTINA", "id": "45097977", "uid": "f85071cc-2db2-4696-a792-b38d2dbbcb20"}, {"name": "Rodriguez Salinas, Eliana Alejandra", "id": "47619911", "uid": "2a4f1d8c-3804-44b0-900a-28680e424c04"}, {"name": "Rolon Frias, Guada", "id": "47857932", "uid": "a2e89a2f-0bf2-41f2-8ade-7190dea7d7cb"}, {"name": "ROMAGNOLI, LUCIA ABIGAIL", "id": "46924433", "uid": "dcb4b3c7-5474-49ab-8433-678ba69996d4"}, {"name": "ROMERO, DAIANA VICTORIA", "id": "46064581", "uid": "3010d4c9-2267-4e54-95b8-a2a5360565d0"}, {"name": "ROMERO, Federico Nicolás", "id": "46313538", "uid": "57c80c31-0b75-4075-b373-2a539f88d9c6"}, {"name": "Romero Hardy, Pilar", "id": "46462786", "uid": "928b026e-9a12-4733-bfdc-3e576f4b48a0"}, {"name": "Romero, Victoria Maité", "id": "47619284", "uid": "cf636e82-79d1-469f-b3f3-64a1791965dc"}, {"name": "RUIZ DIAZ, VALENTINA", "id": "48081955", "uid": "4c804852-936f-4684-8d8e-9b247c59a179"}, {"name": "Saavedra, Abril Naihara", "id": "46246025", "uid": "12b085c7-f995-418a-9cc9-ce6e823f0f25"}, {"name": "Saffadi, Ludmila Oriana", "id": "47421359", "uid": "2fdd05e1-9147-43b5-b06a-0bed8afb1d75"}, {"name": "SCALAMOGNA, AGOSTINA LUCIANA", "id": "47932768", "uid": "830bb7e2-89e1-4a2c-b122-bbda66210f86"}, {"name": "SILVA, MARIA PAULA", "id": "34941287", "uid": "73221590-9ff1-4c70-a934-aeb04da52a40"}, {"name": "SOBRADO, victoria", "id": "46383722", "uid": "e8217a68-7c97-4c60-bcad-c22288b53539"}, {"name": "Solis, clelia", "id": "38967351", "uid": "7f6cc357-509a-4e33-8895-aeb8bfbdfae7"}, {"name": "Solis, Gimena Victoria Juana", "id": "46856411", "uid": "451eadba-80c7-4178-8342-0887da3cc627"}, {"name": "SOSA, Marcela", "id": "44976338", "uid": "fe8b3dcb-908a-4a2d-bee6-ea118dfdd7cd"}, {"name": "SOTO, MICAELA ANAHÍ", "id": "44085929", "uid": "a74b2397-2138-401b-a3c1-bf1f16c88598"}, {"name": "TORRES, YULIANA CAMILA", "id": "45453131", "uid": "65fadf6c-c4d5-470b-9bd9-3c823b76827a"}, {"name": "Torres, Camila Maria Lujan", "id": "45642571", "uid": "2234cb42-ae67-423e-b58d-516465796221"}, {"name": "TORRES, DAIRA PRISCILA", "id": "46775173", "uid": "8c44858e-24d5-4532-97f0-53e11ddf594e"}, {"name": "TORRES MOLINA, ELIAS EZEQUIEL", "id": "44089474", "uid": "0cd34632-bd54-481c-a33c-bd306d824ea4"}, {"name": "TOURN, ORIANA ANGELINA", "id": "44944122", "uid": "ec417004-fb6b-4260-bd29-3cc5a30614ee"}, {"name": "Urne Ayala, Gonzalo Agustín", "id": "47993412", "uid": "07bc9ccf-baa5-416b-8464-b5faa2f42cf0"}, {"name": "Valdez, Lara Ximena", "id": "47785286", "uid": "6382c0a5-2918-453f-89cf-2245a3c5f5ae"}, {"name": "Valdez, Miqueas", "id": "47618933", "uid": "02e78790-33b7-4fff-b5ae-6c108339f1e6"}, {"name": "Valenzuela, Ludmila", "id": "47895604", "uid": "09552a5f-4063-4451-92d3-af08ce99be8c"}, {"name": "VALLEJOS PEREYRA, SOFIA NAZARET", "id": "44196082", "uid": "1cd02cb9-8467-4ad7-81c2-b241eacb3040"}, {"name": "Velez, Guillermina", "id": "47536815", "uid": "acd48679-b4f4-4c3c-9ca7-f30f6103f28d"}, {"name": "VERA MONZÓN, GASTON DANIEL", "id": "43438003", "uid": "61cf7a4b-ddd3-4a97-8ef9-761abb699966"}, {"name": "Veron Paret, Delfina Juliana", "id": "47614461", "uid": "3515378b-98a9-448d-aa1f-0371290e22e2"}, {"name": "Veron, Tatiana Maria José", "id": "46963320", "uid": "1a8caa29-36d9-4d4a-82fb-03701201e92b"}, {"name": "Verri, Julieta Yazmin", "id": "44221643", "uid": "46c04d89-6ce6-4c8f-9903-0cb7811f1f32"}, {"name": "WEIGANDT, NEHEMIAS JOEL", "id": "47537808", "uid": "31aa8dda-5d41-4b2b-ada4-381f943b0c97"}, {"name": "WOJTUN, KEVIN TOMAS", "id": "46383787", "uid": "bb328daa-e949-4184-9c00-cab371a1fbff"}, {"name": "Young Billasante, Bárbara", "id": "44976848", "uid": "cc95edad-7acf-47e7-bcd1-cbdd45b8faa0"}, {"name": "ZAMUDIO, LISSETH DESIREÉ", "id": "46316628", "uid": "bb4ad82d-b65d-4b6e-bd6a-91dfa55bc8dd"}, {"name": "Alderete, José Gabriel", "id": "29044986", "uid": "0acef768-8477-44f1-ae87-ae60d3e57f57"}];
+// ── URL HASH HANDLING ────────────────────────────────────
+function checkURLHash() {
+  const hash = window.location.hash.slice(1); // remove #
+  if (hash && /^\d+$/.test(hash)) {
+    document.getElementById('scan-input').value = hash;
+    setTimeout(() => showConfirm(), 400);
   }
-})();
+}
 
-// ── INIT ───────────────────────────────────────────────────
+// ── INIT ─────────────────────────────────────────────────
 renderStudents();
-checkURLCode();
 
-// Handle ?tab= in URL
-const urlTab = new URLSearchParams(window.location.search).get('tab');
-if (urlTab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+// Check if opened via QR hash link
+const initHash = window.location.hash.slice(1);
+if (initHash && /^\d+$/.test(initHash)) {
+  // Switch to escanear tab and trigger confirm
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const tabView = document.getElementById('view-' + urlTab);
-  if (tabView) {
-    tabView.classList.add('active');
-    const btns = document.querySelectorAll('.tab-btn');
-    const idx  = ['alumnos','asistencia','escanear','config'].indexOf(urlTab);
-    if (idx >= 0) btns[idx].classList.add('active');
-    if (urlTab === 'escanear') checkURLCode();
-  }
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-escanear').classList.add('active');
+  document.querySelectorAll('.tab-btn')[2].classList.add('active');
+  document.getElementById('scan-input').value = initHash;
+  setTimeout(() => showConfirm(), 600);
 }
 </script>
 </body>
