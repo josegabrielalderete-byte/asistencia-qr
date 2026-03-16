@@ -212,7 +212,7 @@ tbody tr:hover td{background:var(--surface2)}
 <!-- ══ ESCANEAR ══ -->
 <div id="view-escanear" class="view">
   <div class="section-title">Registrar Asistencia</div>
-  <div class="section-sub">Escaneá tu QR o ingresá tu DNI.</div>
+  <div class="section-sub">Escaneá el QR de tu tarjeta personal para marcar tu asistencia.</div>
   <div style="max-width:420px;margin:0 auto">
     <div class="card" style="text-align:center">
       <h2 style="font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:8px">📷 Escaneá tu QR</h2>
@@ -225,9 +225,11 @@ tbody tr:hover td{background:var(--surface2)}
       <div class="cam-status" id="cam-status"></div>
       <button class="btn-cam" id="btn-open-cam" onclick="startCamera()">📷 Abrir Cámara y Escanear QR</button>
       <button class="btn-stop" id="btn-stop-cam" style="display:none" onclick="stopCamera()">✕ Cerrar cámara</button>
-      <div class="divider">o ingresá el DNI manualmente</div>
-      <input id="scan-input" type="text" placeholder="TU DNI" autocomplete="off" style="text-align:center;font-size:1.3rem;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:12px" onkeydown="if(event.key==='Enter') showConfirm()">
-      <button class="btn btn-primary" style="width:100%" onclick="showConfirm()">→ Continuar</button>
+      <!-- Campo oculto — solo se completa via QR o URL hash, nunca manualmente -->
+      <input id="scan-input" type="hidden" autocomplete="off">
+      <div style="margin-top:20px;padding:14px;background:var(--surface2);border-radius:10px;font-size:.8rem;color:var(--muted)">
+        🔒 La asistencia solo se puede registrar escaneando el QR personal.<br>No es posible ingresar datos manualmente.
+      </div>
     </div>
   </div>
 </div>
