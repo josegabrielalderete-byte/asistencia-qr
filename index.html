@@ -160,10 +160,11 @@ tbody tr:hover td{background:var(--surface2)}
 <header>
   <h1>📋 AsistenciaQR</h1>
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('alumnos',this)">👥 Alumnos</button>
-    <button class="tab-btn" onclick="switchTab('asistencia',this)">📊 Asistencia</button>
-    <button class="tab-btn" onclick="switchTab('escanear',this)">📷 Escanear</button>
-    <button class="tab-btn" onclick="switchTab('config',this)">⚙️ Config</button>
+    <button class="tab-btn" id="tab-alumnos" onclick="switchTab('alumnos',this)" style="display:none">👥 Alumnos</button>
+    <button class="tab-btn" id="tab-asistencia" onclick="switchTab('asistencia',this)" style="display:none">📊 Asistencia</button>
+    <button class="tab-btn active" id="tab-escanear" onclick="switchTab('escanear',this)">📷 Escanear</button>
+    <button class="tab-btn" id="tab-config" onclick="switchTab('config',this)" style="display:none">⚙️ Config</button>
+    <button class="tab-btn" id="tab-lock" onclick="toggleProfesor()">🔒 Profe</button>
   </div>
 </header>
 
@@ -622,6 +623,52 @@ function checkURLHash() {
   }
 }
 
+// ── PROFESOR MODE ────────────────────────────────────────
+// Change this password to whatever you want
+const PROFESOR_PASSWORD = 'tecnologia2026';
+let profesorMode = false;
+
+function toggleProfesor() {
+  if (profesorMode) {
+    // Lock — go back to student mode
+    profesorMode = false;
+    document.getElementById('tab-alumnos').style.display    = 'none';
+    document.getElementById('tab-asistencia').style.display = 'none';
+    document.getElementById('tab-config').style.display     = 'none';
+    document.getElementById('tab-lock').textContent         = '🔒 Profe';
+    // Switch to escanear
+    switchTab('escanear', document.getElementById('tab-escanear'));
+  } else {
+    // Ask for password
+    document.getElementById('pass-input').value = '';
+    document.getElementById('pass-error').textContent = '';
+    document.getElementById('pass-modal').classList.add('open');
+    setTimeout(() => document.getElementById('pass-input').focus(), 100);
+  }
+}
+
+function checkPassword() {
+  const val = document.getElementById('pass-input').value;
+  if (val === PROFESOR_PASSWORD) {
+    profesorMode = true;
+    document.getElementById('pass-modal').classList.remove('open');
+    document.getElementById('tab-alumnos').style.display    = 'inline-flex';
+    document.getElementById('tab-asistencia').style.display = 'inline-flex';
+    document.getElementById('tab-config').style.display     = 'inline-flex';
+    document.getElementById('tab-lock').textContent         = '🔓 Profe';
+    // Go to asistencia tab
+    switchTab('asistencia', document.getElementById('tab-asistencia'));
+  } else {
+    document.getElementById('pass-error').textContent = '❌ Contraseña incorrecta';
+    document.getElementById('pass-input').value = '';
+    document.getElementById('pass-input').focus();
+  }
+}
+
+function closePassModal() {
+  document.getElementById('pass-modal').classList.remove('open');
+}
+
 // ── INIT ─────────────────────────────────────────────────
 renderStudents();
 
@@ -637,5 +684,19 @@ if (initHash && /^\d+$/.test(initHash)) {
   setTimeout(() => showConfirm(), 600);
 }
 </script>
+
+<!-- ══ PASSWORD MODAL ══ -->
+<div class="modal-overlay" id="pass-modal">
+  <div class="modal" style="max-width:320px">
+    <button class="modal-close" onclick="closePassModal()">✕</button>
+    <h3 style="margin-bottom:6px">🔒 Acceso Profesor</h3>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:20px">Ingresá la contraseña para acceder al panel docente.</p>
+    <input id="pass-input" type="password" placeholder="Contraseña"
+      style="margin-bottom:12px;font-size:1.1rem;text-align:center"
+      onkeydown="if(event.key==='Enter') checkPassword()">
+    <button class="btn btn-primary" style="width:100%" onclick="checkPassword()">Ingresar</button>
+    <div id="pass-error" style="color:var(--danger);font-size:.82rem;margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
 </body>
 </html>
