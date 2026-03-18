@@ -488,11 +488,16 @@ function exportCSV() {
 }
 
 // ── GOOGLE SHEETS ─────────────────────────────────────────
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzRJReAp0E4dpUzKtyldJJLr8s581gl8muZ_l19kcxK1CJsMlaqtBmoa3vzO4uSIVj8yw/exec"; 
+
 async function sendToSheets(record) {
-  const cfg = JSON.parse(localStorage.getItem('aqr_config') || '{}');
-  if (!cfg.webhook) return;
+  if (!WEBHOOK_URL || WEBHOOK_URL.includes("PEGAR_AQUI")) {
+    console.warn('Falta configurar el Webhook en el código.');
+    return;
+  }
+  
   try {
-    await fetch(cfg.webhook, {
+    await fetch(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
@@ -503,7 +508,9 @@ async function sendToSheets(record) {
         estado: record.status
       })
     });
-  } catch(e) { console.warn('Sheets error:', e); }
+  } catch(e) { 
+    console.warn('Error de red al enviar a Sheets:', e); 
+  }
 }
 
 // ── CONFIG ────────────────────────────────────────────────
