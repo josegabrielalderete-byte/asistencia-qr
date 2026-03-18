@@ -183,8 +183,8 @@ tbody tr:hover td{background:var(--surface2)}
 <div id="view-asistencia" class="view">
   <div class="section-title">Registro de Asistencia</div>
   <div class="gs-cta">
-    <div>📊 <strong>Google Sheets</strong><br><small style="color:var(--muted)">Ver planilla en Drive</small></div>
-    <a id="gs-link" href="#" target="_blank">Abrir ↗</a>
+    <div>📊 <strong>Google Sheets</strong><br><small style="color:var(--muted)">Base de datos central</small></div>
+    <a id="gs-link" href="#" target="_blank">Abrir Planilla ↗</a>
   </div>
   <div class="stats-row">
     <div class="stat-box green"><div class="s-label">Hoy</div><div class="s-val" id="stat-today">0</div></div>
@@ -198,13 +198,15 @@ tbody tr:hover td{background:var(--surface2)}
       <button class="btn btn-ghost btn-sm" onclick="applyFilter()">Filtrar</button>
       <button class="btn btn-ghost btn-sm" onclick="clearFilter()">Limpiar</button>
       <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
-      <button class="btn btn-danger btn-sm" onclick="clearAttendance()">🗑 Borrar</button>
     </div>
     <div style="overflow-x:auto">
       <table><thead><tr><th>#</th><th>Nombre</th><th>DNI</th><th>Fecha</th><th>Hora</th><th>Estado</th></tr></thead>
       <tbody id="att-body"></tbody></table>
     </div>
-    <div id="att-empty" class="empty-state" style="display:none"><div class="ei">📭</div><p>Sin registros.</p></div>
+    <div id="att-empty" class="empty-state" style="display:none">
+      <div class="ei" id="sync-icon">⏳</div>
+      <p id="sync-text">Sincronizando con Google Sheets...</p>
+    </div>
   </div>
 </div>
 
@@ -224,9 +226,6 @@ tbody tr:hover td{background:var(--surface2)}
       <button class="btn-cam" id="btn-open-cam" onclick="startCamera()">📷 Abrir Cámara y Escanear QR</button>
       <button class="btn-stop" id="btn-stop-cam" style="display:none" onclick="stopCamera()">✕ Cerrar cámara</button>
       <input id="scan-input" type="hidden" autocomplete="off">
-      <div style="margin-top:20px;padding:14px;background:var(--surface2);border-radius:10px;font-size:.8rem;color:var(--muted)">
-        🔒 La asistencia solo se puede registrar escaneando el QR personal.<br>No es posible ingresar datos manualmente.
-      </div>
     </div>
   </div>
 </div>
@@ -234,11 +233,12 @@ tbody tr:hover td{background:var(--surface2)}
 <div id="view-config" class="view">
   <div class="section-title">Configuración</div>
   <div class="card">
-    <div class="field"><label>URL Google Sheet</label><input id="cfg-gs-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/..."></div>
-    <div class="field"><label>Webhook Apps Script</label><input id="cfg-webhook" type="url" placeholder="https://script.google.com/macros/s/..."></div>
     <div class="field"><label>Hora límite (Presente vs Tarde)</label><input id="cfg-cutoff" type="time" value="09:10"></div>
     <button class="btn btn-primary" onclick="saveConfig()">Guardar</button>
     <span id="cfg-status" style="margin-left:12px;font-size:.82rem"></span>
+    <p style="margin-top:20px; color:var(--muted); font-size:0.85rem">
+      <i>Nota: La URL del Google Sheet y el Webhook ahora están anclados de forma segura en el código fuente (GitHub) para que la base de datos se sincronice en todos los dispositivos automáticamente.</i>
+    </p>
   </div>
 </div>
 
@@ -274,14 +274,21 @@ tbody tr:hover td{background:var(--surface2)}
 </div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────
+// ── CONFIGURACIÓN GLOBAL (SSOT) ───────────────────────────
+// Pegá tu enlace largo de Apps Script entre las comillas
+const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyQt0Kd3vFRVtY3HdBxL2FyqYscKL1WDjMA0OyfeqTIAjqIpIgQ_Muvo1_2jNRasdcB/exec"; 
+// Opcional: Pegá acá el link de visualización de tu Google Sheet
+const SHEET_VIEW_URL = "https://docs.google.com/spreadsheets/d/18tyDBO9mxmO4nO-71VE8adt6PSGx_DLd25gjM-4TjpM/edit";
+
+
+// ── DATA PRELOAD ──────────────────────────────────────────
 const PRELOADED = [{"name": "ACOSTA CUSSIGH, ENZO FABRICIO", "id": "46607967", "uid": "544e7727-c20c-42a6-9bc9-3d3b5c155e4a"}, {"name": "Acosta, Lourdes Cecilia", "id": "46857724", "uid": "3caf1901-7c59-4c7a-a5e4-317feb042ea5"}, {"name": "ACUÑA, BRUNO MATIAS ISMAEL", "id": "46075329", "uid": "0c50567e-ca30-4695-a04e-aea9218f4546"}, {"name": "AGUILAR PÉREZ, Mateo", "id": "46462510", "uid": "31aa16ca-5c33-4f16-8ef6-739e0135e987"}, {"name": "Aguilar, Ramón Jesús", "id": "47536776", "uid": "64b9e6b8-897d-4c06-9fc7-62d876069fee"}, {"name": "ALBORNOZ, TATIANA DIAMELA EMILCE", "id": "46715385", "uid": "3c47c557-67d8-41ea-bc4a-5db247a4f68b"}, {"name": "Alvarez Maidana, Nahuel", "id": "47785293", "uid": "e68b84b2-6347-404d-ae60-74786e4c8a86"}, {"name": "ANRIQUEZ, Ezequiel", "id": "37070737", "uid": "08063b23-7e02-4fa3-b2ac-c458da8ff0a5"}, {"name": "Aquino, Keren Lucila", "id": "45760663", "uid": "4315941f-123a-465f-aa74-763c0db0427e"}, {"name": "AVALOS, Joaquín", "id": "47857934", "uid": "d3d83bf8-9138-4e2c-ad88-28e7cb68cde5"}, {"name": "AYALA, Melina", "id": "47524091", "uid": "d201d42b-1090-44fb-928c-bb9155536e5f"}, {"name": "Barrientos, Carla Agostina", "id": "47895144", "uid": "d2791204-f352-4b3e-923d-24d73f06232d"}, {"name": "BENITEZ ARREGIN, Brenda", "id": "46912779", "uid": "fdfc04ef-8e3a-4ecd-9e00-4e870f2cac80"}, {"name": "BENITEZ MAMBRIN, ALEJANDRA MAGALI", "id": "46718177", "uid": "da93e08d-1450-41be-b447-4755ffec3bf2"}, {"name": "BENITEZ SABOTIGH, Ana", "id": "47615848", "uid": "a03fc954-9c0c-47dd-9bf4-65e93320e47b"}, {"name": "BERGNA, JULIETA CONSTANZA", "id": "47041468", "uid": "c3218155-70b2-4581-a214-ff2937926f45"}, {"name": "BERNAL PEREZ, LUCIANO EZEQUIEL", "id": "44470708", "uid": "d4ce5339-3dd5-45aa-936b-aff95e2798a1"}, {"name": "BLANCO, JULIETA DE LOS ANGELES", "id": "45374403", "uid": "d352dc2e-8d1a-477f-9e83-65620bb730e5"}, {"name": "Bogado Ramirez, Nicole Ángeles Yael", "id": "46149306", "uid": "ce1d82c1-9c3a-4196-a33d-df49e1d9c7fc"}, {"name": "Bogarin, Sofia Giuliana", "id": "48081628", "uid": "f8728771-b8c1-4db1-b67a-54e5ed46e54b"}, {"name": "Bravo, Brenda Celeste", "id": "47235874", "uid": "390ca524-438a-4c03-ac65-bf2c26f0ca7f"}, {"name": "Brignardello, Antonella", "id": "47857034", "uid": "d2cd8f63-7493-4b1e-ae42-b18612a0d051"}, {"name": "BRITEZ, ESTEFANIS YASMIN", "id": "46924220", "uid": "3a20a2e2-3cfe-4504-8e30-c56775d3dcc9"}, {"name": "Bustamante, Abril", "id": "47615549", "uid": "201ebb2a-a740-452a-b9b1-7871a3e31893"}, {"name": "BUTARELLI, CAMILA AILEN", "id": "45370920", "uid": "9007b349-4bb3-4c26-b8b7-f722049be70b"}, {"name": "CABAÑA, LUNA", "id": "47856979", "uid": "0c988209-cb55-4c37-828c-e24d6b84b40b"}, {"name": "Cabral, Sheila Loana", "id": "47620101", "uid": "3d2831c5-0808-4f49-b5f5-454ce638afd9"}, {"name": "Caceres, Denisse Ailén", "id": "47538093", "uid": "165df6a0-7ff9-46db-ae1b-2540056fdeef"}, {"name": "Caitano Bastiani, Maximiliano Augusto", "id": "47932934", "uid": "9a024599-fd9d-4c58-a0ae-5590ca05f7d5"}, {"name": "CANTEROS, JIMENA", "id": "47224614", "uid": "d7f3037e-a2bc-456a-bc32-d3be103264fc"}, {"name": "Caravaca, Kiara", "id": "47228365", "uid": "5485b4a9-d672-4aa9-8cb9-ef07e65c6148"}, {"name": "CARBONEL PADILLA, MARIA ALEJANDRA", "id": "95439542", "uid": "637b7f28-aa14-4bdc-939e-48471a391627"}, {"name": "Chavez, Valentina Micaela", "id": "47932627", "uid": "c6bd32e8-d7fa-4dd0-8729-f8b1f97048b3"}, {"name": "Cohene, Enzo Luciano", "id": "46781581", "uid": "2df789ce-d123-45dd-96fd-90b2bfeafc54"}, {"name": "COUTINHO, CAMILA", "id": "47991839", "uid": "87d77c5c-0425-4e08-9d76-3f310976d815"}, {"name": "COUTINHO TUOTI, TRINIDAD INES", "id": "42098750", "uid": "f67ebdda-dadd-4443-8156-9403fed9d7ad"}, {"name": "Cuenca, Milena Abigail", "id": "47720117", "uid": "f8356b8b-fec3-40b5-98da-5f9cd9e52f23"}, {"name": "DAVALOS ESQUIVEL, MARTINA", "id": "43109669", "uid": "2fe615af-1613-4f7d-816e-9e0d698e4e23"}, {"name": "De Bortoli, Renata", "id": "47856750", "uid": "97ec909e-4932-450f-b38e-b6505c61aa8d"}, {"name": "Dino, Julia Anabella", "id": "46855968", "uid": "5979faaa-a4d4-4a0e-8a8e-0256e36a9b2a"}, {"name": "Domínguez Bogado, Rocío Soledad", "id": "47226071", "uid": "eab12358-a40c-481d-bc41-b9b941e275b4"}, {"name": "Eidman, Yael Naiara", "id": "44470134", "uid": "5de14830-a803-45b5-bc89-888d88fdcfe0"}, {"name": "Enriquez, Tiago", "id": "47366345", "uid": "4f84d723-9688-4601-a5d9-ccd75d790558"}, {"name": "Escobar, Milagros", "id": "47524549", "uid": "a9f98ad5-9435-447f-98b4-7fd784cc84d0"}, {"name": "ESCURRA, CHIARA GUILLERMINA", "id": "47895196", "uid": "5440c60d-a774-4c36-a4c5-0156c846696c"}, {"name": "Español, Sofia", "id": "47893570", "uid": "fb3777ac-31e7-4b25-acf3-4dbf0ac877c5"}, {"name": "Espindola, Amanda Indira", "id": "47368121", "uid": "c21f818b-ba34-462d-b3c9-9cc4e57a9bb7"}, {"name": "ESPINOZA, LEO", "id": "42061735", "uid": "91edf807-c669-4d17-8b95-b03cd3638d89"}, {"name": "Fariña, Valentina", "id": "46715584", "uid": "563e506e-8820-4559-b890-8f9843523693"}, {"name": "FERNANDEZ, ANTONELLA MILAGROS", "id": "46514153", "uid": "bbc69c9b-c26b-4983-808e-46978f727256"}, {"name": "Fernandez, Enzo Guillermo", "id": "40180262", "uid": "9c646ace-cf9f-476d-8c4d-db64d61550f6"}, {"name": "FERNANDEZ GABE, CAMILA BELÉN", "id": "44826283", "uid": "8ef36a36-4b0b-4f54-ac51-29b73bfe6e43"}, {"name": "Fernández, Lara Agostina", "id": "47895427", "uid": "abe610f8-e63a-42d4-b6bb-ac6db6908977"}, {"name": "Fernández, Luciana Agustina", "id": "47524073", "uid": "c155347e-9a08-42f8-be8a-40fe66c474b1"}, {"name": "FERNANDEZ, SILVIA CLARA LUZ", "id": "45648645", "uid": "28b3a85e-9c43-4f74-8ae3-cad7ef4bc57f"}, {"name": "FERNANDEZ, WANDA EIMI", "id": "46315675", "uid": "bd9eb52d-2ae7-480f-b7e3-c53e382a1e6f"}, {"name": "Ferrero, Valentina Marianela Sol", "id": "47785313", "uid": "8ac00525-efa9-4cfc-8144-c3789663740a"}, {"name": "Florentin, Celeste Gisel", "id": "46776992", "uid": "e6f7c602-b098-4339-bfa5-4c578d375c4b"}, {"name": "FRANCO, LUCIANA MICAELA", "id": "44718564", "uid": "6cbfceaf-e8b0-47a1-850d-8f8b84c5ab2e"}, {"name": "FRIAS, FLORENCIA ANAHÍ", "id": "46075345", "uid": "84a6d17c-5dfe-439c-a8c5-bd029904deff"}, {"name": "Galarza Gonzalez, Milagros Anabela", "id": "38714448", "uid": "399647bd-3d84-4f5a-a819-601e0373b1f5"}, {"name": "Gallardo, Nicole Kiara Azul", "id": "47933717", "uid": "2f11c78e-5d12-4545-afc3-831ed1b0ea9c"}, {"name": "Gamarra, Carla Cristina", "id": "46808816", "uid": "f9b30826-e856-4a8e-b811-215e1477ad82"}, {"name": "GARCÍA, MARCOS ANTONIO LEONEL", "id": "41974504", "uid": "4e9f2e65-61de-4d6c-8a28-5a3660af5463"}, {"name": "Garcia, Martina Nair", "id": "47324477", "uid": "1759623f-5e3a-4d7b-b5ef-87ab9f495f88"}, {"name": "Gauna Hernandez, Lucia Magali", "id": "47895470", "uid": "07a9f3f7-7b02-410c-a98f-33c6f019fd34"}, {"name": "GIMENEZ, DIAMELA ADRIADNA", "id": "46673699", "uid": "29555a42-8f36-46f2-a18e-f8a90d131434"}, {"name": "Gimenez, Valentin", "id": "46857917", "uid": "e45a7542-4f40-4600-97b7-8703a54cb8f9"}, {"name": "GOMEZ, ANGEL NATANAEL", "id": "47785837", "uid": "4be10dc3-bce3-4126-a889-4a062125b1df"}, {"name": "GOMEZ AYALA, LEANDRO EZEQUIEL", "id": "44089494", "uid": "00d8c9ca-11e2-4f07-9809-d1f0cd89df5b"}, {"name": "Gomez Ayala, Nahuel Marcelo", "id": "47537522", "uid": "624e9c2d-008c-411c-a9f7-cac66a0f21fd"}, {"name": "Gomez, Karen Noemi", "id": "44467986", "uid": "fe94ef8d-a282-4d9b-b4e9-94c2fe9863eb"}, {"name": "Gomez Lorefici, Nahiara Belén", "id": "44388500", "uid": "2b7a1cf6-1aa7-4117-9043-8b180e2fa14b"}, {"name": "Gomez, Lourdes Ludmila", "id": "47719999", "uid": "957488b9-00e8-4874-959f-29ba59f80292"}, {"name": "Gomez Luna, Lara Milagros", "id": "47228358", "uid": "7a5a5d1d-e282-4749-aefc-ccf686e57105"}, {"name": "GOMEZ, SANTIAGO IGNACIO", "id": "46716853", "uid": "cd455e5b-694d-4a47-b091-480a735cbb69"}, {"name": "Gomez Sibert, Masculino", "id": "45794300", "uid": "76035d49-ef1e-4ec6-83cf-b88a4f878520"}, {"name": "GONZALEZ, CAMILA CELENA", "id": "45100367", "uid": "9463acd6-51da-4d44-be9b-0d21573876f8"}, {"name": "GONZALEZ, CANDELA ZAIRA DANIELA", "id": "46384581", "uid": "a4babbe9-672b-43b2-95d9-c880e50a197b"}, {"name": "GONZALEZ, Lixus", "id": "44408495", "uid": "1f5269fe-27cc-4432-a643-4e661fb7304c"}, {"name": "Gonzalez, Nicole Abigail", "id": "47524254", "uid": "cccc4311-c742-441c-9e14-7af7b1e7abc8"}, {"name": "GONZÁLEZ, ROCIO AILEN", "id": "44944870", "uid": "cb47b9b9-664c-4077-9198-5f8c90540493"}, {"name": "Gonzalez, Ximena Micaela", "id": "46602266", "uid": "635bc6e3-eca3-4d8b-a464-e1fd07125da4"}, {"name": "GUERRERO, ANTONELA ASTRID", "id": "45558988", "uid": "778f0d99-286f-44eb-949c-c9fecff477b8"}, {"name": "Heñin, María Delfina", "id": "47856832", "uid": "13985b94-6c6f-42ee-82e1-8c9c181b35b9"}, {"name": "Hernandez, Candela", "id": "47423465", "uid": "605d9a95-cc44-4043-a288-051820302e10"}, {"name": "Hidalgo, Darío Alexander", "id": "46518834", "uid": "53933fc0-9f13-4963-92b6-8e8849d066ae"}, {"name": "Hüwel, Martina", "id": "47932916", "uid": "ef93e5fd-b155-4de1-80c3-3400de0b377a"}, {"name": "Illa Sotelo, Gonzalo Lionel", "id": "47427388", "uid": "fb520743-4ed7-4d93-b608-d982d439420b"}, {"name": "Insaurralde, Abril Milagros", "id": "47423474", "uid": "c5a5c4c5-e251-4091-b4ec-a666d8002b38"}, {"name": "KISZCKA, Valentina", "id": "47323771", "uid": "e54171b8-87cd-4844-b93d-0c0c2433fc23"}, {"name": "LEDESMA, MARINA EDITH", "id": "40912074", "uid": "7fee8c9b-ba6c-4d7b-bb18-502b5d147d25"}, {"name": "Lezcano Baldovino, Rocio", "id": "47932962", "uid": "2cf70b7e-27b1-43fe-b0c0-b360a6fb7633"}, {"name": "Llopiz Morante, Agustina", "id": "44468707", "uid": "65dc952b-a3d3-425c-b8fb-0b4dac0fad67"}, {"name": "López Burgos, Melani Mailén", "id": "47042539", "uid": "731edb12-a661-43b5-a66d-4657bec02670"}, {"name": "LÓPEZ, Jazmín", "id": "46855845", "uid": "74461c05-cb5e-4330-a325-0cb8ad501716"}, {"name": "LÓPEZ, LAUTARO DANIEL", "id": "47223880", "uid": "bf972c1d-f265-46ec-8676-073d9c954b35"}, {"name": "Lopez Origgi, ximena", "id": "46844241", "uid": "d04cb151-53fd-4d83-aed5-a31daa370e1c"}, {"name": "Lugo Caceres, Sofia", "id": "46921759", "uid": "cc40bb68-e21a-4522-9773-1b3c786a4ddc"}, {"name": "Luque, Madelen Lucero", "id": "48730408", "uid": "b47b62ab-5691-42de-8f78-7bdd29c6efda"}, {"name": "Machuca, Agostina Maria Sol", "id": "47615456", "uid": "fd65d252-2894-4122-992e-0a449a9f55ce"}, {"name": "MACHUCA, ARIADNA ANDREA ELIZABETH", "id": "44976807", "uid": "b6639bc3-5417-4008-ab58-e27d17b09023"}, {"name": "MACIEL ROMERO, GUSTAVO ALEJANDRO", "id": "44198636", "uid": "40b55843-a118-40e8-910c-c62b2d813b2e"}, {"name": "MADONA, Mauro", "id": "45794570", "uid": "c73289d7-a9b5-4729-987c-ffe4ffd136b8"}, {"name": "MAIDANA, CONSTANZA NOEMÍ", "id": "45097363", "uid": "54f00709-add0-4bf5-96b6-d2bf5a7605f3"}, {"name": "MAIDANA, FÁTIMA", "id": "44331669", "uid": "68c52551-0b7c-4007-9580-84239ac2b7e4"}, {"name": "MAIDANA ROMERO, FLORENCIA AGUSTINA", "id": "43275410", "uid": "1497a66f-519a-4937-8652-0d17b48e4d4d"}, {"name": "Maidana, Sofia Eliane", "id": "47421316", "uid": "72fa8487-8cf2-48cb-8098-fa5163c2cb86"}, {"name": "MAIORANA, MILENA", "id": "43535589", "uid": "07ce5a15-726e-4023-b79a-a846cc0f9b7b"}, {"name": "MARISCAL, GLORIA ALEJANDRA", "id": "43299962", "uid": "e511541b-a91e-452f-8b0a-90e18473f32d"}, {"name": "Marucci Vera, Fabricio Joel", "id": "48080163", "uid": "4ec597d3-81f2-47a9-8fbb-a1948d01644d"}, {"name": "MAUREL, SOL SABRINA ARIELA", "id": "43885133", "uid": "e62f92f2-6f43-4fee-b3c3-eef0f338a1b9"}, {"name": "Medina Lugo, Nariana Shaiel", "id": "48081956", "uid": "835da384-a9ce-40af-8555-8154f0181f1d"}, {"name": "MERLO, ALDANA ARACELI", "id": "47857005", "uid": "b118e88b-3690-40f6-a345-82dc4d425a04"}, {"name": "Mierez, Milena Sofía", "id": "47932908", "uid": "4a5a8903-dc2c-4399-8a7c-9872d39e47ce"}, {"name": "MIÑO DIAZ, Miño Dia Damaris", "id": "43747699", "uid": "74d3fbbb-ec45-4d1b-a27d-2a3d4f3e5e91"}, {"name": "Montenegro, Adriel Martin", "id": "46988728", "uid": "0d50b1c8-d0db-4844-bb21-63ee9b5ad08e"}, {"name": "Monzon, Daiana Aylen", "id": "47856968", "uid": "a91e8423-f09d-45fb-a12c-4641d4488c8a"}, {"name": "MONZÓN RUIZ DIAZ, ROCÍO AILÉN", "id": "46512698", "uid": "32eee2d5-fbc8-433a-87f6-f5d241f005a3"}, {"name": "MORA, MALAQUIAS MATIAS GABRIEL", "id": "45944369", "uid": "22abcde0-efa9-4b3e-900a-e14178bbda80"}, {"name": "Moreira Cabral, Lujan Ainara", "id": "47894709", "uid": "200760d3-e157-465a-bfc8-e3f857440423"}, {"name": "Nacimento, Juan Francisco", "id": "48130541", "uid": "cea9cdf5-e2ba-4df2-b260-f8b5d48d845c"}, {"name": "NUÑEZ, LARA DANIELA", "id": "45250276", "uid": "86defb58-d481-49ef-b028-df3cd43a1615"}, {"name": "Nuñez, Tomás", "id": "47368477", "uid": "dbfe2794-4042-40ea-a57b-a0b07ea89a03"}, {"name": "OJEDA, LAUTARO EZEQUIEL", "id": "44470140", "uid": "b1de4f4c-f25c-424c-8437-93f2296248e0"}, {"name": "OLIVARES, DANIELA MELINA", "id": "46075414", "uid": "1a60f7b0-c453-4955-9ba4-f6638a232ca4"}, {"name": "OLMEDO, JOSÉ MARTÍ", "id": "47995383", "uid": "5d11ddca-2c26-4b0c-af45-722f8a242d1c"}, {"name": "ORTMANN, DAMARIS DANIELA", "id": "41903927", "uid": "b5413b63-1f82-43a2-92e2-e1c66307d153"}, {"name": "OVIEDO MARTINEZ, LURDES ANALUZ", "id": "46963469", "uid": "c95cebe5-9c73-49ff-85c9-191777379468"}, {"name": "PANIAGUA GALEANO, KAMILO EZEQUIEL", "id": "45643322", "uid": "91f80603-16f6-4c97-ae7a-860c51f1750f"}, {"name": "PELOSO, NATALIA SOLEDAD", "id": "26432848", "uid": "f02d1c5b-c2ee-4d07-8c4d-945e09cff0ff"}, {"name": "Peralta, Joan", "id": "47368472", "uid": "ec1504b2-a502-4028-bc27-c241a40dd20d"}, {"name": "Perez, Ludmila Dahiana Belen", "id": "47537122", "uid": "a021a84c-efe4-497b-9f1d-fba80bdeced1"}, {"name": "PÉREZ, MALENA", "id": "44826003", "uid": "d31c4993-7fa7-448b-8bc1-e51acc0aba97"}, {"name": "Pineda, Valentina, Celeste", "id": "47324224", "uid": "aaeb5f5d-72e8-4c0a-be6e-f83a5399a213"}, {"name": "POLICH BORDA, NAHUEL AGUSTÍN", "id": "45044456", "uid": "5cd7bb24-7476-4d70-a881-314668e7afa7"}, {"name": "Ponce, Eduardo Daniel", "id": "47227442", "uid": "8f8feb38-8a8e-43d4-a3d8-21d89ff4b4e2"}, {"name": "Portillo, Javier", "id": "47422366", "uid": "f25336e3-a677-4ce3-968b-858ad8c70df7"}, {"name": "Prieto Fernandez, Enzo Gabriel", "id": "44826508", "uid": "62b66d96-d7c3-4436-a57d-55e95f71d397"}, {"name": "QUINTANA, DAIANA AYELÉN", "id": "46818725", "uid": "2bab55e8-f3f6-4d0d-bd57-be41fbd97266"}, {"name": "Quirico, Mauricio Martin", "id": "46773078", "uid": "979410fb-2bd3-4cf4-8f63-f6f062617623"}, {"name": "QUIROZ, NERINA ABIGAIL", "id": "46840708", "uid": "097426cb-5f77-4ebd-93ac-913554ea5bee"}, {"name": "Rafart Allende, Rosario", "id": "46463247", "uid": "a6c4c47d-1817-40e8-83f9-34ef3aa33135"}, {"name": "REPETTO ANDRIANI, GIULIANA", "id": "44000175", "uid": "6252e458-de27-43c5-9eea-1778df05899a"}, {"name": "RETAMOZA, SELENA", "id": "43932649", "uid": "53cb11c4-0620-4062-9c90-52882a7d076b"}, {"name": "Rodriguez, María Eugenia", "id": "46074482", "uid": "9864b12b-248f-464f-aed6-be31b62ede9e"}, {"name": "RODRIGUEZ, MILAGROS VALENTINA", "id": "47539020", "uid": "72fea2f7-cb3e-4304-8cee-561cd77a19dc"}, {"name": "Rodriguez, Pablo Matías", "id": "47004506", "uid": "479e16f4-75b4-4d71-8163-1c7aecee9602"}, {"name": "RODRIGUEZ PARDO, ABRIL AGUSTINA", "id": "45097977", "uid": "f7c22420-cb7d-49bd-b416-5caa2fd11a0c"}, {"name": "Rodriguez Salinas, Eliana Alejandra", "id": "47619911", "uid": "1a536a34-a38b-4acb-9ac2-ba18463b12bc"}, {"name": "Rolon Frias, Guada", "id": "47857932", "uid": "36bcfa15-939f-401d-ab61-e8cc730ef739"}, {"name": "ROMAGNOLI, LUCIA ABIGAIL", "id": "46924433", "uid": "bd76f9b3-1696-45c3-a17d-09d00cf46e0e"}, {"name": "ROMERO, DAIANA VICTORIA", "id": "46064581", "uid": "b31597ca-ab16-418e-a021-40780407c006"}, {"name": "ROMERO, Federico Nicolás", "id": "46313538", "uid": "81d61ad3-2b1b-41e0-a04f-184c6d22fa44"}, {"name": "Romero Hardy, Pilar", "id": "46462786", "uid": "bd5d4714-b369-4733-ac27-442a907232ff"}, {"name": "Romero, Victoria Maité", "id": "47619284", "uid": "da263df0-6363-497a-954f-4d234045649d"}, {"name": "RUIZ DIAZ, VALENTINA", "id": "48081955", "uid": "f78c97b4-15d7-411e-999a-8bcfed33ba3c"}, {"name": "Saavedra, Abril Naihara", "id": "46246025", "uid": "cd14dab3-c074-4b10-905d-10780cd84de6"}, {"name": "Saffadi, Ludmila Oriana", "id": "47421359", "uid": "35927442-9c0f-495e-90ce-7aa8463b1def"}, {"name": "SCALAMOGNA, AGOSTINA LUCIANA", "id": "47932768", "uid": "8144a593-b38c-4f17-ac10-88a1b05c5eae"}, {"name": "SILVA, MARIA PAULA", "id": "34941287", "uid": "8525ed3f-019f-4424-a9ba-708261daeb73"}, {"name": "SOBRADO, victoria", "id": "46383722", "uid": "d2debbf1-ed8b-4c6a-9bbe-59ac4143d0c7"}, {"name": "Solis, clelia", "id": "38967351", "uid": "d2f50b7d-a01f-4245-a2d2-e0a5455ae599"}, {"name": "Solis, Gimena Victoria Juana", "id": "46856411", "uid": "e3fd5955-488f-4c4a-9a4a-0f9f2230b6ce"}, {"name": "SOSA, Marcela", "id": "44976338", "uid": "010fab3f-b145-4cb3-a366-863852d54940"}, {"name": "SOTO, MICAELA ANAHÍ", "id": "44085929", "uid": "f472b570-f621-45e8-8241-13c5060e0a40"}, {"name": "TORRES, YULIANA CAMILA", "id": "45453131", "uid": "839f884c-702f-4b23-9dca-c69995a42cd4"}, {"name": "Torres, Camila Maria Lujan", "id": "45642571", "uid": "a72ecb43-db6f-4f6a-a84c-e78c01c1e47c"}, {"name": "TORRES, DAIRA PRISCILA", "id": "46775173", "uid": "7a18ce2f-ec40-4fb5-8fa5-cfe40b0a05de"}, {"name": "TORRES MOLINA, ELIAS EZEQUIEL", "id": "44089474", "uid": "75a22ead-3441-4769-8e5d-d9adfd8d6501"}, {"name": "TOURN, ORIANA ANGELINA", "id": "44944122", "uid": "fe5d29d0-e3fb-442b-9b4a-3832befcb46d"}, {"name": "Urne Ayala, Gonzalo Agustín", "id": "47993412", "uid": "9be7416e-2e4b-482e-a422-77cd3475370c"}, {"name": "Valdez, Lara Ximena", "id": "47785286", "uid": "d0476009-e620-43e7-966e-91a5b07ff70d"}, {"name": "Valdez, Miqueas", "id": "47618933", "uid": "d4ecab03-54e0-4007-8a37-b20e7caabe5e"}, {"name": "Valenzuela, Ludmila", "id": "47895604", "uid": "e0c1cacf-8498-46d2-b25c-991624922923"}, {"name": "VALLEJOS PEREYRA, SOFIA NAZARET", "id": "44196082", "uid": "0d8a2866-bb8e-4eb0-a973-37f9429cc4fe"}, {"name": "Velez, Guillermina", "id": "47536815", "uid": "ba702b25-0b15-4c75-b68d-92374cbce8a4"}, {"name": "VERA MONZÓN, GASTON DANIEL", "id": "43438003", "uid": "c3c58e43-75e3-4ca3-b14c-8d795fe3873f"}, {"name": "Veron Paret, Delfina Juliana", "id": "47614461", "uid": "64cee3d9-f986-4d79-97c9-d1a59e67912b"}, {"name": "Veron, Tatiana Maria José", "id": "46963320", "uid": "8975cec6-2082-4764-aa70-b6ae68c2fb5d"}, {"name": "Verri, Julieta Yazmin", "id": "44221643", "uid": "2385ffba-e4c3-420f-81d5-28dbd1310887"}, {"name": "WEIGANDT, NEHEMIAS JOEL", "id": "47537808", "uid": "c97b9164-57f4-4bc4-b1fb-ef3deb8b4e0c"}, {"name": "WOJTUN, KEVIN TOMAS", "id": "46383787", "uid": "385bb1a9-5d50-4155-a2b5-3f6cf429d971"}, {"name": "Young Billasante, Bárbara", "id": "44976848", "uid": "5c322121-b2c2-4393-9838-07184ffe271c"}, {"name": "ZAMUDIO, LISSETH DESIREÉ", "id": "46316628", "uid": "2bd26d29-61c3-4e08-b6c2-890d4b8a0313"}, {"name": "Alderete, José Gabriel", "id": "29044986", "uid": "f0452de1-b5eb-4468-b766-73c009c9a5e9"}];
 
 let students = [];
 let attendance = [];
 let config = {};
 
-// Blindamos la carga de memoria para evitar crasheos si hay datos viejos corruptos
+// Blindamos la carga
 try { students = JSON.parse(localStorage.getItem('aqr_students')) || null; } catch(e) { students = null; }
 try { attendance = JSON.parse(localStorage.getItem('aqr_attendance')) || []; } catch(e) { attendance = []; }
 try { config = JSON.parse(localStorage.getItem('aqr_config')) || {}; } catch(e) { config = {}; }
@@ -290,7 +297,7 @@ let confirmStudent = null;
 let currentQRStudent = null;
 let camStream = null, camAnimFrame = null, camActive = false;
 
-// Preload si está vacío o si los datos se borraron por seguridad
+// Preload
 if (!Array.isArray(students) || students.length < 10) {
   students = PRELOADED;
   localStorage.setItem('aqr_students', JSON.stringify(students));
@@ -305,10 +312,43 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + tab).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (tab === 'asistencia') renderAttendance();
+  
+  if (tab === 'asistencia') {
+    renderAttendance(); // Muestra rápido lo viejo
+    syncFromSheets();   // Sincroniza desde la nube
+  }
   if (tab === 'alumnos')    renderStudents();
   if (tab === 'config')     loadConfig();
   if (tab === 'escanear')   checkURLHash();
+}
+
+// ── SYNC DESDE LA NUBE ────────────────────────────────────
+async function syncFromSheets() {
+  if (!WEBHOOK_URL || WEBHOOK_URL.includes("PEGAR_AQUI")) return;
+  
+  const empty = document.getElementById('att-empty');
+  if (attendance.length === 0) {
+     empty.style.display = 'block';
+     document.getElementById('sync-icon').textContent = '⏳';
+     document.getElementById('sync-text').textContent = 'Sincronizando con Google Sheets...';
+  }
+
+  try {
+    const res = await fetch(WEBHOOK_URL);
+    const data = await res.json();
+    
+    if (Array.isArray(data)) {
+      attendance = data; // Reemplaza la memoria local con la Nube!
+      saveAttendance();
+      renderAttendance();
+    }
+  } catch (e) {
+    console.error("Error al sincronizar:", e);
+    if (attendance.length === 0) {
+      document.getElementById('sync-icon').textContent = '⚠️';
+      document.getElementById('sync-text').textContent = 'Error al conectar. Mostrando solo datos locales.';
+    }
+  }
 }
 
 // ── STUDENTS ──────────────────────────────────────────────
@@ -359,7 +399,7 @@ function showQR(uid) {
   document.getElementById('qr-modal-id').textContent   = 'DNI: ' + s.id;
   const container = document.getElementById('qr-container');
   container.innerHTML = '';
-  const base = config.baseUrl || window.location.origin + window.location.pathname;
+  const base = window.location.origin + window.location.pathname;
   const url  = base + '#' + s.id;
   new QRCode(container, { text: url, width: 200, height: 200, colorDark: '#0a0a0f', colorLight: '#ffffff' });
   document.getElementById('qr-modal').classList.add('open');
@@ -420,7 +460,8 @@ function registerAttendance() {
   const today = now.toLocaleDateString('es-AR');
   const time  = now.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
 
-  const alreadyToday = attendance.find(a => a.uid === s.uid && a.date === today);
+  // Verificar si ya está marcado localmente
+  const alreadyToday = attendance.find(a => a.id === s.id && a.date === today);
   if (alreadyToday) {
     document.getElementById('confirm-step1').style.display = 'none';
     document.getElementById('confirm-step2').style.display = 'flex';
@@ -452,13 +493,21 @@ function renderAttendance(filtered) {
   const empty = document.getElementById('att-empty');
   tbody.innerHTML = '';
   const today = new Date().toLocaleDateString('es-AR');
+  
   document.getElementById('stat-today').textContent    = attendance.filter(a => a.date === today).length;
   document.getElementById('stat-total').textContent    = attendance.length;
   document.getElementById('stat-students').textContent = students.length;
-  const gsUrl = config.gsUrl || '#';
-  document.getElementById('gs-link').href = gsUrl;
-  if (!data.length) { empty.style.display='block'; return; }
+  
+  document.getElementById('gs-link').href = SHEET_VIEW_URL;
+
+  if (!data.length) { 
+    empty.style.display='block'; 
+    document.getElementById('sync-icon').textContent = '📭';
+    document.getElementById('sync-text').textContent = 'Sin registros en la nube.';
+    return; 
+  }
   empty.style.display = 'none';
+  
   data.forEach((r,i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td style="color:var(--muted)">${i+1}</td><td>${r.name}</td>
@@ -478,7 +527,7 @@ function applyFilter() {
   renderAttendance(f);
 }
 function clearFilter() { document.getElementById('filter-date').value=''; document.getElementById('filter-name').value=''; renderAttendance(); }
-function clearAttendance() { if (!confirm('¿Borrar todos los registros?')) return; attendance=[]; saveAttendance(); renderAttendance(); }
+function clearAttendance() { if (!confirm('⚠️ IMPORTANTE: Esto borra la vista local. Si querés borrar de verdad, tenés que borrar en Google Sheets directo.')) return; attendance=[]; saveAttendance(); renderAttendance(); }
 function exportCSV() {
   const h = 'Nombre,DNI,Fecha,Hora,Estado\n';
   const r = attendance.map(a => `${a.name},${a.id},${a.date},${a.time},${a.status}`).join('\n');
@@ -488,14 +537,11 @@ function exportCSV() {
 }
 
 // ── GOOGLE SHEETS ─────────────────────────────────────────
-const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzRJReAp0E4dpUzKtyldJJLr8s581gl8muZ_l19kcxK1CJsMlaqtBmoa3vzO4uSIVj8yw/exec"; 
-
 async function sendToSheets(record) {
   if (!WEBHOOK_URL || WEBHOOK_URL.includes("PEGAR_AQUI")) {
-    console.warn('Falta configurar el Webhook en el código.');
+    console.warn('Falta Webhook en el código. Dato guardado solo en el celular.');
     return;
   }
-  
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
@@ -508,27 +554,18 @@ async function sendToSheets(record) {
         estado: record.status
       })
     });
-  } catch(e) { 
-    console.warn('Error de red al enviar a Sheets:', e); 
-  }
+  } catch(e) { console.warn('Error de red a Sheets:', e); }
 }
 
 // ── CONFIG ────────────────────────────────────────────────
 function saveConfig() {
-  config = {
-    gsUrl:   document.getElementById('cfg-gs-url').value.trim(),
-    webhook: document.getElementById('cfg-webhook').value.trim(),
-    cutoff:  document.getElementById('cfg-cutoff').value || '09:10',
-    baseUrl: window.location.origin + window.location.pathname,
-  };
+  config = { cutoff: document.getElementById('cfg-cutoff').value || '09:10' };
   localStorage.setItem('aqr_config', JSON.stringify(config));
   document.getElementById('cfg-status').textContent = '✅ Guardado';
   setTimeout(() => document.getElementById('cfg-status').textContent='', 2000);
 }
 function loadConfig() {
   const c = JSON.parse(localStorage.getItem('aqr_config') || '{}');
-  document.getElementById('cfg-gs-url').value  = c.gsUrl    || '';
-  document.getElementById('cfg-webhook').value = c.webhook  || '';
   document.getElementById('cfg-cutoff').value  = c.cutoff   || '09:10';
 }
 
@@ -660,12 +697,8 @@ if (initHash && /^\d+$/.test(initHash)) {
   setTimeout(() => showConfirm(), 600);
 }
 
-// Event listener para cerrar modals con la tecla ESC
 document.addEventListener('keydown', function(event) {
-  if (event.key === "Escape") {
-    closePassModal();
-    closeModal();
-  }
+  if (event.key === "Escape") { closePassModal(); closeModal(); }
 });
 </script>
 
